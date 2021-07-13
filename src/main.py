@@ -155,6 +155,20 @@ async def color_error(ctx, error):
         await ctx.send(error)
 
 
+@bot.command(aliases=['pegar'], pass_context=True)
+async def get(ctx, role: discord.Role):
+    
+    author = ctx.author.add_roles([role])
+    return None
+    
+
+@bot.command(aliases=['remover'], pass_context=True)
+async def remove(ctx, role: discord.Role):
+    
+    author = ctx.author.remove_roles([role])
+    return None
+    
+
 def parse_bgcolor(bgcolor):
     if not bgcolor.startswith('#'):
         raise ValueError('A bgcolor must start with a "#"')
