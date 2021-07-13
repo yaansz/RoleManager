@@ -158,14 +158,14 @@ async def color_error(ctx, error):
 @bot.command(aliases=['pegar'], pass_context=True)
 async def get(ctx, role: discord.Role):
     
-    author = ctx.author.add_roles([role])
+    await ctx.author.add_roles([role])
     return None
     
 
 @bot.command(aliases=['remover'], pass_context=True)
 async def remove(ctx, role: discord.Role):
     
-    author = ctx.author.remove_roles([role])
+    await ctx.author.remove_roles([role])
     return None
     
 
