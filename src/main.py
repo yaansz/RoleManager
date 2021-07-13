@@ -18,12 +18,30 @@ async def on_ready():
 
     # Starting the loop
     update_status.start()
-    
 
-@bot.command()
-async def add(ctx, left: int, right: int):
-    """Adds two numbers together."""
-    await ctx.send(left + right)
+@bot.event
+async def on_guild_channel_update(before, after):
+    # Mudou de categoria
+    if before.category.name != after.category.name:
+        print(f"Canal '{after.name}' mudou de '{before.category.name}' para {after.category.name}")
+    
+        # TODO - Memória para o Boninho My Friend
+        ids = [851546649599279124, 864639672177262592]
+        
+        guild = after.guild
+
+        role_name = before.category.name + " - " + before.name
+
+        # Categoria que devo deletar o cargo
+        if after.category.id in ids:
+
+            print("ID encontrado")
+
+            for r in guild.roles:
+                if r.name == role_name:
+                    await r.delete()
+                    await after.send(f"O cargo {role_name} foi deletado!")
+                    return
 
 
 @tasks.loop(seconds=10)
@@ -50,6 +68,57 @@ async def create_error(ctx, error):
     
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode criar um cargo!")
+    else:
+        await ctx.send(error)
+
+
+@bot.command(aliases=['deletar'], pass_context=True)
+@has_permissions(manage_roles = True)
+async def delete(ctx, role: discord.Role):
+
+    await role.delete()
+    await ctx.send("Cargo apagado do servidor!")
+
+@delete.error
+async def delete_error(ctx, error):
+    
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("**Erro:** Você não pode deletar um cargo!")
+    else:
+        await ctx.send(error)
+
+
+@bot.command(aliases=['linked'], pass_context=True)
+@has_permissions(manage_roles = True, manage_channels = True)
+async def linked_role(ctx, type: str = "channel"):
+
+    guild = ctx.guild
+    author = ctx.author
+    msg = ctx.message
+    
+    if type.lower() == "channel":
+        option = msg.channel.category.name + " - " + msg.channel.name
+    elif type.lower() == "category":
+        option = msg.channel.category.name
+    else:
+        raise ValueError("")
+
+    for r in guild.roles:
+        if r.name == option:
+            await ctx.send("Cargo <@&{0.id}> já existe!".format(r))
+            return
+
+    new_role = await guild.create_role(name=option)
+    await ctx.send("Cargo <@&{0.id}> criado.".format(new_role))
+
+
+@linked_role.error
+async def create_error(ctx, error):
+    
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("**Erro:** Você não pode criar um cargo!")
+    elif isinstance(error, ValueError):
+        await ctx.send("**Erro:** Opção inválida! Tente Channel ou Category")
     else:
         await ctx.send(error)
 
@@ -123,12 +192,18 @@ async def rolelist(ctx):
     await ctx.send(lst)
 
 @bot.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
-async def canread(ctx, role: discord.Role, canRead: bool):
+@has_permissions(manage_roles = True, manage_channels = True)
+async def canread(ctx, role: discord.Role, canRead: bool, channel: bool):
     category = ctx.channel.category
 
     if category != None:
         await category.set_permissions(role, view_channel = canRead)
         print("Foi!")
 
+@canread.error
+async def canread_error(ctx, error):
+    
+    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+        await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"')
 
 bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
