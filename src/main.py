@@ -57,7 +57,7 @@ async def update_status():
 @has_permissions(manage_roles = True)
 async def create(ctx, *, args: str):
 
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     guild = ctx.guild
     author = ctx.author
@@ -70,7 +70,7 @@ async def create(ctx, *, args: str):
 @create.error
 async def create_error(ctx, error):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode criar um cargo!")
@@ -82,7 +82,7 @@ async def create_error(ctx, error):
 @has_permissions(manage_roles = True)
 async def delete(ctx, role: discord.Role):
 
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     await role.delete()
     await ctx.send("Cargo apagado do servidor!")
@@ -90,7 +90,7 @@ async def delete(ctx, role: discord.Role):
 @delete.error
 async def delete_error(ctx, error):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode deletar um cargo!")
@@ -102,7 +102,7 @@ async def delete_error(ctx, error):
 @has_permissions(manage_roles = True, manage_channels = True)
 async def linked_role(ctx, type: str = "channel"):
 
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     guild = ctx.guild
     author = ctx.author
@@ -127,7 +127,7 @@ async def linked_role(ctx, type: str = "channel"):
 @linked_role.error
 async def create_error(ctx, error):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode criar um cargo!")
@@ -141,7 +141,7 @@ async def create_error(ctx, error):
 @has_permissions(manage_roles = True)
 async def color(ctx, role: discord.Role, *, args: str):
 
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
    
     if is_bgcolor(args):
 
@@ -162,7 +162,7 @@ async def color(ctx, role: discord.Role, *, args: str):
 @color.error
 async def color_error(ctx, error):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode alterar um cargo!")
@@ -173,7 +173,7 @@ async def color_error(ctx, error):
 @bot.command(aliases=['pegar'], pass_context=True)
 async def get(ctx, role: discord.Role):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     await ctx.author.add_roles(role)
 
@@ -184,7 +184,7 @@ async def get(ctx, role: discord.Role):
 @get.error
 async def get_error(ctx, error):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     if isinstance(error, discord.ext.commands.errors.CommandInvokeError):
         await ctx.send("**Erro:** Você não pode adicionar esse cargo!")
@@ -195,7 +195,7 @@ async def get_error(ctx, error):
 @bot.command(aliases=['remover'], pass_context=True)
 async def remove(ctx, role: discord.Role):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     await ctx.author.remove_roles(role)
 
@@ -206,7 +206,7 @@ async def remove(ctx, role: discord.Role):
 @remove.error
 async def remove_error(ctx, error):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     if isinstance(error, discord.ext.commands.errors.CommandInvokeError):
         await ctx.send("**Erro:** Você não pode remover esse cargo!")
@@ -233,7 +233,7 @@ def is_bgcolor(bgcolor):
 @bot.command(aliases=['lista', 'roles'], pass_context=True)
 async def rolelist(ctx):
 
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
         
     bot_member = ctx.guild.get_member(bot.user.id)
 
@@ -255,7 +255,7 @@ async def rolelist(ctx):
 @has_permissions(manage_roles = True, manage_channels = True)
 async def canread(ctx, role: discord.Role, canRead: bool, channel: bool):
     
-    ctx.message.delete(delay=2)
+    await ctx.message.delete(delay=2)
 
     category = ctx.channel.category
 
