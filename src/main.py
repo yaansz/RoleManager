@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure
 import random
+import copy
 
 import embed
 from colors import *
@@ -294,20 +295,34 @@ async def rolelist(ctx):
     bot_member = ctx.guild.get_member(bot.user.id)
 
     highest_bot_role = bot_member.roles[-1]
+    
+    combine = []
 
     lst = ""
 
+    string = "Lista: "
+    
+    #fields = [("Lista: ", "⠀⠀", False)]
+    fields = []
+
     for r in ctx.guild.roles:
         #list += "<@&{0.id}>".format(r) + "\n"
-        lst += ("<@&{0.id}>\n".format(r) if r.name != "@everyone" and r < highest_bot_role and not r.is_bot_managed() else "")
-    
+        temp = ("<@&{0.id}>\n".format(r) if r.name != "@everyone" and r < highest_bot_role and not r.is_bot_managed() else "")
+
+        if len(lst + temp) >= 1024:
+            fields.append((string, lst, False))
+            string = "⠀⠀"
+            lst = ""
+        else:
+            lst += temp 
+        
+    fields.append(("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@ do cargo> e ele será adicionado na sua conta", False)
+    )
+
     embedmsg = embed.createEmbed(title="Lista de Cargos!", 
         description= f"Veja todos os cargos que você pode pegar! :)",
         color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-        fields=[
-            ("Lista: ", lst, False),
-            ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@ do cargo> e ele será adicionado na sua conta", False)
-        ],
+        fields=fields,
         img="https://cdn.discordapp.com/emojis/812796371638812684.png?v=1")
 
     await ctx.message.channel.send(embed=embedmsg)
