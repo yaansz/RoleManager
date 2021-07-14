@@ -47,7 +47,8 @@ async def on_guild_channel_update(before, after):
 @tasks.loop(seconds=10)
 async def update_status():
 
-    status = ['Muito ocupado', 'Não pertube', 'Jogando', 'Talvez?', 'Sim', 'Não']
+    status = ['Muito ocupado', 'Não pertube', 'Jogando', 'Talvez?', 'Sim', 'Não', 'Boa Pergunta', 
+    '😳', 'Aula do Braida boa d+ slk', '🍻', 'bot lixo']
 
     await bot.change_presence(activity=discord.Game(status[random.randint(0, len(status) - 1)]))
 
@@ -56,6 +57,8 @@ async def update_status():
 @has_permissions(manage_roles = True)
 async def create(ctx, *, args: str):
 
+    ctx.message.delete(2)
+
     guild = ctx.guild
     author = ctx.author
     msg = ctx.message
@@ -63,9 +66,12 @@ async def create(ctx, *, args: str):
     result = await guild.create_role(name=args)
     await ctx.send("Cargo <@&{0.id}> criado no servidor {0.guild}.".format(result))
 
+
 @create.error
 async def create_error(ctx, error):
     
+    ctx.message.delete(2)
+
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode criar um cargo!")
     else:
@@ -76,12 +82,16 @@ async def create_error(ctx, error):
 @has_permissions(manage_roles = True)
 async def delete(ctx, role: discord.Role):
 
+    ctx.message.delete(2)
+
     await role.delete()
     await ctx.send("Cargo apagado do servidor!")
 
 @delete.error
 async def delete_error(ctx, error):
     
+    ctx.message.delete(2)
+
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode deletar um cargo!")
     else:
@@ -91,6 +101,8 @@ async def delete_error(ctx, error):
 @bot.command(aliases=['linked'], pass_context=True)
 @has_permissions(manage_roles = True, manage_channels = True)
 async def linked_role(ctx, type: str = "channel"):
+
+    ctx.message.delete(2)
 
     guild = ctx.guild
     author = ctx.author
@@ -115,6 +127,8 @@ async def linked_role(ctx, type: str = "channel"):
 @linked_role.error
 async def create_error(ctx, error):
     
+    ctx.message.delete(2)
+
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode criar um cargo!")
     elif isinstance(error, ValueError):
@@ -127,8 +141,7 @@ async def create_error(ctx, error):
 @has_permissions(manage_roles = True)
 async def color(ctx, role: discord.Role, *, args: str):
 
-    print(role.name)
-    print(role.permissions)
+    ctx.message.delete(2)
    
     if is_bgcolor(args):
 
@@ -149,6 +162,8 @@ async def color(ctx, role: discord.Role, *, args: str):
 @color.error
 async def color_error(ctx, error):
     
+    ctx.message.delete(2)
+
     if isinstance(error, commands.CheckFailure):
         await ctx.send("**Erro:** Você não pode alterar um cargo!")
     else:
@@ -158,16 +173,46 @@ async def color_error(ctx, error):
 @bot.command(aliases=['pegar'], pass_context=True)
 async def get(ctx, role: discord.Role):
     
+    ctx.message.delete(2)
+
     await ctx.author.add_roles(role)
+
+    await ctx.message.reply(f"Cargo <@&{role.id}> adicionado ao seu perfil!")
+
     return None
+
+@get.error
+async def get_error(ctx, error):
     
+    ctx.message.delete(2)
+
+    if isinstance(error, discord.ext.commands.errors.CommandInvokeError):
+        await ctx.send("**Erro:** Você não pode adicionar esse cargo!")
+    else:
+        await ctx.send(error)
+
 
 @bot.command(aliases=['remover'], pass_context=True)
 async def remove(ctx, role: discord.Role):
     
+    ctx.message.delete(2)
+
     await ctx.author.remove_roles(role)
+
+    await ctx.message.reply(f"Cargo <@&{role.id}> adicionado ao seu perfil!")
+
     return None
+
+@remove.error
+async def remove_error(ctx, error):
     
+    ctx.message.delete(2)
+
+    if isinstance(error, discord.ext.commands.errors.CommandInvokeError):
+        await ctx.send("**Erro:** Você não pode remover esse cargo!")
+    else:
+        await ctx.send(error)
+
 
 def parse_bgcolor(bgcolor):
     if not bgcolor.startswith('#'):
@@ -188,6 +233,7 @@ def is_bgcolor(bgcolor):
 @bot.command(aliases=['lista', 'roles'], pass_context=True)
 async def rolelist(ctx):
 
+    ctx.message.delete(2)
         
     bot_member = ctx.guild.get_member(bot.user.id)
 
@@ -208,6 +254,9 @@ async def rolelist(ctx):
 @bot.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
 @has_permissions(manage_roles = True, manage_channels = True)
 async def canread(ctx, role: discord.Role, canRead: bool, channel: bool):
+    
+    ctx.message.delete(2)
+
     category = ctx.channel.category
 
     if category != None:
