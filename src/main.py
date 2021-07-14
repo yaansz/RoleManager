@@ -28,6 +28,9 @@ async def on_guild_channel_update(before, after):
     Function to monitor guild channels and delete a role linked to a channel if the channel was moved to trash
     '''
     # Mudou de categoria
+    if before == None or after == None:
+        return 
+
     if before.category.name != after.category.name:
         print(f"Canal '{after.name}' mudou de '{before.category.name}' para {after.category.name}")
     
@@ -58,7 +61,7 @@ async def update_status():
     Function to update the bot status
     '''
     status = ['Muito ocupado', 'Não pertube', 'Jogando', 'Talvez?', 'Sim', 'Não', 'Boa Pergunta', 
-    '😳', 'Aula do Braida boa d+ slk', '🍻', 'minha vida no lixo', 'One Piece', 'hum', 'dois', 'tres', 'cod 4'
+    '😳', 'Aula do Braida boa d+ slk', '🍻', 'minha vida no lixo', 'One Piece', 'hum', 'dois', 'tres', 'cod 4',
     'Netflix', 'Disney+', 'HBO MAX', 'Cuphead', 'Undertale', 'guilty gear', 'no hard', 'prova de arq2',
     'segredo xiii', 'meia noite eu te conto', 'AAAAAAAAAAAAAAAAAA', 'dale', 'tudo mentira', 'deveras intelectus',
     'será?', 'mc poze nos anos 80', 'cringe 😡😔🤮', 'calma lá meu parceiro', 'a morte do romantismo',
@@ -371,14 +374,21 @@ async def rolelist(ctx):
 
 @bot.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
 @has_permissions(manage_roles = True, manage_channels = True)
-async def canread(ctx, role: discord.Role, canRead: bool, channel: bool):
+async def canread(ctx, role: discord.Role, canRead: bool, type: str = "channel"):
     
     await ctx.message.delete(delay=2)
 
-    category = ctx.channel.category
+    if type == "category":
+        category = ctx.channel.category
 
-    if category != None:
-        await category.set_permissions(role, view_channel = canRead)
+        if category != None:
+            await category.set_permissions(role, view_channel = canRead)
+            await ctx.send("Permissão alterada!")
+    elif type == "channel":
+
+        await ctx.channel.set_permissions(role, view_channel = canRead)
+        await ctx.send("Permissão alterada!")
+
 
 @canread.error
 async def canread_error(ctx, error):
