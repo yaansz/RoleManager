@@ -171,7 +171,7 @@ async def linked_role(ctx, type: str = "channel"):
 
 
 @linked_role.error
-async def create_error(ctx, error):
+async def linked_role_error(ctx, error):
     
     await ctx.message.delete(delay=2)
 
@@ -331,5 +331,29 @@ async def canread_error(ctx, error):
     
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
         await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"')
+
+@bot.command(aliases=['ajuda'], pass_context=True)
+async def commands(ctx):
+    
+    lst = ""
+    lst += "`.create <role name>` - Comando para criar um cargo.\n"
+    lst += "`.delete <@ mention role>` - Comando para deletar um cargo.\n"
+    lst += "`.linked <default:channel or category>` - Comando para criar um cargo vinculado a um canal ou categoria\n"
+    lst += "`.color <@ mention role> <color code hex>` - Comando para mudar a cor de um cargo.\n" 
+    lst += "`.get <@ mention role>` - Comando para pegar um cargo.\n"
+    lst += "`.remove <@ mention role>` - Comando para remover um cargo.\n"
+    lst += "`.rolelist` - Comando para listar os cargos disponíveis.\n"
+    lst += "`.canread <@ mention role> <True/False>` - Comando para permitir ou não a leitura de um chat (TODO)\n"
+    
+    embedmsg = embed.createEmbed(title="Lista de Comandos!", 
+        description= f"Veja todos os comandos disponíveis!",
+        color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+        fields=[
+            ("Lista: ", lst, False),
+            
+            ],
+        img="https://cdn.discordapp.com/emojis/812796371638812684.png?v=1")
+
+    await ctx.message.channel.send(embed=embedmsg)
 
 bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
