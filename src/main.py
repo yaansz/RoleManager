@@ -120,7 +120,7 @@ async def linked_role(ctx, type: str = "channel"):
             await ctx.send("Cargo <@&{0.id}> já existe!".format(r))
             return
 
-    new_role = await guild.create_role(name=option)
+    new_role = await guild.create_role(name=option, mentionable=True)
     await ctx.send("Cargo <@&{0.id}> criado.".format(new_role))
 
 
