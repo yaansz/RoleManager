@@ -243,9 +243,6 @@ async def rolelist(ctx):
 
     for r in ctx.guild.roles:
         #list += "<@&{0.id}>".format(r) + "\n"
-
-        print(ctx.author.guild_permissions())
-
         lst += ("<@&{0.id}>\n".format(r) if r.name != "@everyone" and r < highest_bot_role and not r.is_bot_managed() else "")
     
 
