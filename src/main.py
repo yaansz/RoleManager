@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure
 import random
 import copy
+from typing import Union
 
 import embed
 from colors import *
@@ -129,6 +130,7 @@ async def linked_role(ctx, type: str = "channel"):
     """
         This function creates a role linked to a channel or a category, it's very useful to ping everyone who is interested to an specific chat, like a discipline or a very interesting topic
     """
+
     await ctx.message.delete(delay=2)
 
     guild = ctx.guild
@@ -146,10 +148,10 @@ async def linked_role(ctx, type: str = "channel"):
         if r.name == option:
 
             embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
-            description= f"O cargo <@&{result.id}> já está no servidor, não precisa criar de novo!🍻",
+            description= f"O cargo <@&{r.id}> já está no servidor, não precisa criar de novo!🍻",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
-                ("Como pegar?", f"Apenas digite .get <@&{result.id}> e ele será adicionado na sua conta", False)
+                ("Como pegar?", f"Apenas digite .get <@&{r.id}> e ele será adicionado na sua conta", False)
             ],
             img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
 
@@ -176,7 +178,7 @@ async def linked_role_error(ctx, error):
     
     await ctx.message.delete(delay=2)
 
-    if isinstance(error, commands.CheckFailure):
+    if isinstance(error, CheckFailure):
         await ctx.send("**Erro:** Você não pode criar um cargo!")
     elif isinstance(error, ValueError):
         await ctx.send("**Erro:** Opção inválida! Tente Channel ou Category")
@@ -225,28 +227,61 @@ async def color_error(ctx, error):
         await ctx.send(error)
 
 
-# TODO REWRITE THAT SHITT
-
 @bot.command(aliases=['pegar', 'add', 'add_roles'], pass_context=True)
-async def get(ctx, role: discord.Role):
+async def get(ctx, role: Union[str, discord.Role] = "channel"):
     
     await ctx.message.delete(delay=2)
+    
+    guild = ctx.guild
+    author = ctx.author
+    msg = ctx.message
+    option = None
 
-    await ctx.author.add_roles(role)
+    if isinstance(role, discord.Role):
+        pass
+    elif role.lower() == "channel":
+        option = msg.channel.category.name + " - " + msg.channel.name
+    elif role.lower() == "category":
+        option = msg.channel.category.name
+    else:
+        raise ValueError("")
 
-    embedmsg = embed.createEmbed(title="Cargo Atualizado!", 
-        description= f"O cargo <@&{role.id}> foi adicionado ao perfil <@{ctx.author.id}>",
-        color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-        fields=[
-            ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@&{role.id}> e ele será adicionado na sua conta", False)
-        ],
-        img="https://cdn.discordapp.com/emojis/854557933421461514.gif?v=1")
 
-    await ctx.message.channel.send(embed=embedmsg)
+    found = False
+    if option is not None:
+        for r in guild.roles:
+            if r.name == option:
+                role = r
+                found = True
+                break
+    
+    if option != None and not found:
+        embedmsg = embed.createEmbed(title="Cargo não existe!", 
+            description= f"Infelizmente, o cargo que você deseja criar não existe, pode tentar criar com o .linked ou .create",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+            ],
+            img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
+
+        await ctx.message.channel.send(embed=embedmsg)
+            
+    else:
+
+        await ctx.author.add_roles(role)
+
+        embedmsg = embed.createEmbed(title="Cargo Atualizado!", 
+            description= f"O cargo <@&{role.id}> foi adicionado ao perfil <@{ctx.author.id}>",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+                ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@&{role.id}> e ele será adicionado na sua conta", False)
+            ],
+            img="https://cdn.discordapp.com/emojis/854557933421461514.gif?v=1")
+
+        await ctx.message.channel.send(embed=embedmsg)
 
     return None
 
-@get.error
+#@get.error
 async def get_error(ctx, error):
     
     await ctx.message.delete(delay=2)
@@ -375,4 +410,4 @@ async def commands(ctx):
 
     await ctx.message.channel.send(embed=embedmsg)
 
-bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
+bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
