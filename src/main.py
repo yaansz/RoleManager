@@ -14,6 +14,8 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='.', intents=intents)
 
+time_to_delete = 5
+
 
 @bot.event
 async def on_ready():
@@ -121,7 +123,7 @@ async def delete_error(ctx, error):
     
     await ctx.message.delete(delay=2)
 
-    if isinstance(error, commands.CheckFailure):
+    if isinstance(error, CheckFailure):
         await ctx.send("**Erro:** Você não pode deletar um cargo!")
     else:
         await ctx.send(error)
@@ -158,7 +160,7 @@ async def linked_role(ctx, type: str = "channel"):
             ],
             img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
 
-            await msg.channel.send(embed=embedmsg)
+            await msg.channel.send(embed=embedmsg, delete_after= time_to_delete)
 
             # Don't create again!
             return
@@ -260,16 +262,29 @@ async def get(ctx, role: Union[str, discord.Role] = "channel"):
     
     if option != None and not found:
         embedmsg = embed.createEmbed(title="Cargo não existe!", 
-            description= f"Infelizmente, o cargo que você deseja criar não existe, pode tentar criar com o .linked ou .create",
+            description= f"Infelizmente, o cargo que você deseja pegar não existe, pode tentar criar com o .linked ou .create",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
             ],
             img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
 
-        await ctx.message.channel.send(embed=embedmsg)
-            
-    else:
+        await ctx.message.channel.send(embed=embedmsg, delete_after= time_to_delete)
+        
+        # END
+        return   
+    elif role in author.roles:
+        embedmsg = embed.createEmbed(title="Você já possui esse cargo!", 
+            description = f"Você está tentando adicionar um cargo que já possui!",
+            color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields = [
+            ],
+            img="https://cdn.discordapp.com/emojis/765953530204127253.png?v=1")
 
+        await ctx.message.channel.send(embed=embedmsg, delete_after= time_to_delete)
+
+        # END
+        return 
+    else:
         await ctx.author.add_roles(role)
 
         embedmsg = embed.createEmbed(title="Cargo Atualizado!", 
@@ -290,15 +305,63 @@ async def get_error(ctx, error):
     await ctx.message.delete(delay=2)
 
     if isinstance(error, discord.ext.commands.errors.CommandInvokeError):
-        await ctx.send("**Erro:** Você não pode adicionar esse cargo!")
+        await ctx.send("**Erro:** Você não pode adicionar esse cargo!", delete_after= time_to_delete)
     else:
         await ctx.send(error)
 
 
 @bot.command(aliases=['remover'], pass_context=True)
-async def remove(ctx, role: discord.Role):
+async def remove(ctx, role: Union[str, discord.Role] = "channel"):
     
     await ctx.message.delete(delay=2)
+    
+    guild = ctx.guild
+    author = ctx.author
+    msg = ctx.message
+    option = None
+
+    if isinstance(role, discord.Role):
+        pass
+    elif role.lower() == "channel":
+        option = msg.channel.category.name + " - " + msg.channel.name
+    elif role.lower() == "category":
+        option = msg.channel.category.name
+    else:
+        raise ValueError("")
+
+    found = False
+    if option is not None:
+        for r in guild.roles:
+            if r.name == option:
+                role = r
+                found = True
+                break
+    
+    if option != None and not found:
+        embedmsg = embed.createEmbed(title="Cargo não existe!", 
+            description = f"Você está tentando remover um cargo que não existe!",
+            color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields = [
+            ],
+            img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
+
+        await ctx.message.channel.send(embed=embedmsg, delete_after= time_to_delete)
+        
+        # END
+        return            
+
+    if role not in author.roles:
+        embedmsg = embed.createEmbed(title="Você não possui esse cargo!", 
+            description = f"Você está tentando remover um cargo que não possui!",
+            color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields = [
+            ],
+            img="https://cdn.discordapp.com/emojis/853000725822308412.png?v=1", delete_after= time_to_delete)
+
+        await ctx.message.channel.send(embed=embedmsg)
+
+        # END
+        return 
 
     await ctx.author.remove_roles(role)
 
@@ -401,13 +464,13 @@ async def commands(ctx):
     
     lst = ""
     lst += "`.create <role name>` - Comando para criar um cargo.\n"
-    lst += "`.delete <@ mention role>` - Comando para deletar um cargo.\n"
+    lst += "`.delete <default: current chat or @ mention role>` - Comando para deletar um cargo.\n"
     lst += "`.linked <default:channel or category>` - Comando para criar um cargo vinculado a um canal ou categoria\n"
     lst += "`.color <@ mention role> <color code hex>` - Comando para mudar a cor de um cargo.\n" 
-    lst += "`.get <@ mention role>` - Comando para pegar um cargo.\n"
+    lst += "`.get <default: current chat or @ mention role>` - Comando para pegar um cargo.\n"
     lst += "`.remove <@ mention role>` - Comando para remover um cargo.\n"
     lst += "`.rolelist` - Comando para listar os cargos disponíveis.\n"
-    lst += "`.canread <@ mention role> <True/False>` - Comando para permitir ou não a leitura de um chat (TODO)\n"
+    lst += "`.canread <@ mention role> <True/False> <default: Channel or Category>` - Comando para permitir ou não a leitura de um chat\n"
     
     embedmsg = embed.createEmbed(title="Lista de Comandos!", 
         description= f"Veja todos os comandos disponíveis!",
@@ -420,4 +483,9 @@ async def commands(ctx):
 
     await ctx.message.channel.send(embed=embedmsg)
 
-bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
+
+# Official
+# bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
+
+# Test
+bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
