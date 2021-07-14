@@ -315,7 +315,11 @@ async def rolelist(ctx):
             lst = ""
         else:
             lst += temp 
-        
+
+    if fields == []:
+        fields.append((string, lst, False))
+
+
     fields.append(("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@ do cargo> e ele será adicionado na sua conta", False)
     )
 
