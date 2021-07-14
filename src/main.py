@@ -356,4 +356,4 @@ async def commands(ctx):
 
     await ctx.message.channel.send(embed=embedmsg)
 
-bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
+bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
