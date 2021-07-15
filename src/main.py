@@ -27,6 +27,7 @@ async def on_ready():
     # Starting the loop
     update_status.start()
 
+
 @tasks.loop(seconds=10)
 async def update_status():
     '''
@@ -44,7 +45,13 @@ async def update_status():
     elif result == status.Status.Watching:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=random.choice(result.value)))
     else:
-         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.custom, name=random.choice(result.value)))
+         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.idle, name=random.choice(result.value)))
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("**Erro:** Esse comando não existe. Procure na nossa lista .commands")
 
 
 @bot.event
