@@ -7,14 +7,17 @@ from typing import Union
 
 import embed
 from colors import *
+import creation
 
+import auxiliar
 
 intents = discord.Intents.default()
 intents.members = True
 
 bot = commands.Bot(command_prefix='.', intents=intents)
+bot.add_command(creation.create)
 
-time_to_delete = 5
+
 
 
 @bot.event
@@ -70,43 +73,6 @@ async def update_status():
     'rei do gado', 'boa noite meu consagrado']
 
     await bot.change_presence(activity=discord.Game(status[random.randint(0, len(status) - 1)]))
-
-
-@bot.command(aliases=['criar'], pass_context=True)
-@has_permissions(manage_roles = True)
-async def create(ctx, *, args: str):
-    """Create a new role with the given name
-    """
-    await ctx.message.delete(delay=2)
-
-    guild = ctx.guild
-    author = ctx.author
-    msg = ctx.message
-
-    result = await guild.create_role(name=args, mentionable=True)
-
-    embedmsg = embed.createEmbed(title="Novo Cargo!", 
-        description= f"O cargo <@&{result.id}> foi criado por <@{author.id}>",
-        color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-        fields=[
-            ("Como pegar?", f"Apenas digite .get <@&{result.id}> e ele será adicionado na sua conta", False)
-        ],
-        img="https://cdn.discordapp.com/emojis/862024241951145984.gif?v=1")
-
-    await msg.channel.send(embed=embedmsg)
-    
-    return
-
-
-@create.error
-async def create_error(ctx, error):
-    
-    await ctx.message.delete(delay=2)
-
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("**Erro:** Você não pode criar um cargo!")
-    else:
-        await ctx.send(error)
 
 
 @bot.command(aliases=['deletar'], pass_context=True)
@@ -471,7 +437,7 @@ async def commands(ctx):
     lst += "`.remove <@ mention role>` - Comando para remover um cargo.\n"
     lst += "`.rolelist` - Comando para listar os cargos disponíveis.\n"
     lst += "`.canread <@ mention role> <True/False> <default: Channel or Category>` - Comando para permitir ou não a leitura de um chat\n"
-    
+
     embedmsg = embed.createEmbed(title="Lista de Comandos!", 
         description= f"Veja todos os comandos disponíveis!",
         color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
@@ -485,7 +451,7 @@ async def commands(ctx):
 
 
 # Official
-bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
+# bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
 
 # Test
-# bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
+bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
