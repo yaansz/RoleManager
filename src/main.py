@@ -5,6 +5,8 @@ import random
 import copy
 from typing import Union
 
+import status.status as status
+
 import embed
 from colors import *
 import creation
@@ -24,6 +26,26 @@ async def on_ready():
 
     # Starting the loop
     update_status.start()
+
+@tasks.loop(seconds=10)
+async def update_status():
+    '''
+    Function to update the bot status
+    '''
+    #await bot.change_presence(activity=discord.Game(status[random.randint(0, len(status) - 1)]))
+    result = random.choice(list(status.Status))
+    
+    if result == status.Status.Playing:
+        await bot.change_presence(activity=discord.Game(name=random.choice(result.value)))
+    elif result == status.Status.Streaming:
+        await bot.change_presence(activity=discord.Streaming(name=random.choice(result.value), url="https://www.twitch.tv/yaansz"))
+    elif result == status.Status.Listening:
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=random.choice(result.value)))
+    elif result == status.Status.Watching:
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=random.choice(result.value)))
+    else:
+         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.custom, name=random.choice(result.value)))
+
 
 @bot.event
 async def on_guild_channel_update(before, after):
@@ -56,21 +78,6 @@ async def on_guild_channel_update(before, after):
                     await r.delete()
                     await after.send(f"O cargo {role_name} foi deletado!")
                     return
-
-
-@tasks.loop(seconds=10)
-async def update_status():
-    '''
-    Function to update the bot status
-    '''
-    status = ['Muito ocupado', 'Não pertube', 'Jogando', 'Talvez?', 'Sim', 'Não', 'Boa Pergunta', 
-    '😳', 'Aula do Braida boa d+ slk', '🍻', 'minha vida no lixo', 'One Piece', 'hum', 'dois', 'tres', 'cod 4',
-    'Netflix', 'Disney+', 'HBO MAX', 'Cuphead', 'Undertale', 'guilty gear', 'no hard', 'prova de arq2',
-    'segredo xiii', 'meia noite eu te conto', 'AAAAAAAAAAAAAAAAAA', 'dale', 'tudo mentira', 'deveras intelectus',
-    'será?', 'mc poze nos anos 80', 'cringe 😡😔🤮', 'calma lá meu parceiro', 'a morte do romantismo',
-    'rei do gado', 'boa noite meu consagrado']
-
-    await bot.change_presence(activity=discord.Game(status[random.randint(0, len(status) - 1)]))
 
 
 @bot.command(aliases=['deletar'], pass_context=True)
