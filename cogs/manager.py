@@ -9,6 +9,7 @@ import utils.embed as embed
 from utils.colors import *
 
 from pathlib import Path
+import os
 
 
 class Manager(commands.Cog):
@@ -20,7 +21,7 @@ class Manager(commands.Cog):
         self.client = client
 
         # Some good paramters like timer and other shits
-        with open(str(Path().absolute()) + '/../database/utils.json', 'r') as f:
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/../database/utils.json', 'r') as f:
             info = json.load(f)
 
         self.delete_user_message = info['utils']['delete_user_message']
