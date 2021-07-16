@@ -5,19 +5,34 @@ import random
 import copy
 from typing import Union
 
-import status.status as status
 
-import embed
+# My things
+import status.status as status
+import utils.embed as embed
 from colors import *
-import creation
 
 import auxiliar
 
+
+INITIAL_EXTENSIONS = [
+    'cogs.manager'
+]
+
+
 intents = discord.Intents.default()
 intents.members = True
-
 bot = commands.Bot(command_prefix='.', intents=intents)
-bot.add_command(creation.create)
+
+# Extensions
+for extension in INITIAL_EXTENSIONS:
+    try:
+        bot.load_extension(extension)
+    except Exception as e:
+        print('Failed to load extension {}\n{}: {}'.format(
+            extension, type(e).__name__, e))
+
+
+# COMMANDS BELLOW 
 
 
 @bot.event
@@ -45,7 +60,7 @@ async def update_status():
     elif result == status.Status.Watching:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=random.choice(result.value)))
     else:
-         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.idle, name=random.choice(result.value)))
+         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.unknown, name=random.choice(result.value)))
 
 
 @bot.event

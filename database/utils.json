@@ -1,0 +1,7 @@
+{
+    "utils" : 
+    {
+        "delete_user_message" : 2,
+        "delete_system_message" : 10
+    }
+}
