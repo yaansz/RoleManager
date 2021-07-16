@@ -14,6 +14,7 @@ from utils.colors import *
 import auxiliar
 
 import pathlib
+from pathlib import Path
 
 pathlib.Path().resolve()
 
@@ -23,7 +24,6 @@ INITIAL_EXTENSIONS = [
     'cogs.humanresources',
     'cogs.utils'
 ]
-
 
 intents = discord.Intents.default()
 intents.members = True
