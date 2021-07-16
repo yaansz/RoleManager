@@ -1,5 +1,6 @@
 from enum import Enum
 import random
+import typing
 
 class Status(Enum):
     Watching = ['Aula do Braida boa d+ slk', '🍻', 'One Piece', 'Netflix', 'Disney+', 'HBO MAX', 'Cuphead',
@@ -11,7 +12,7 @@ class Status(Enum):
     Playing = ['Jogando', 'Playing', 'Talvez?', 'Boa Pergunta', '😳', '🍻', 'minha vida no lixo',
     'Cuphead', 'Undertale', 'guilty gear', 'no hard', 'segredo xiii', 'meia noite eu te conto',
     'vava?', 'r6zin', 'steam sale', 'Enter the Gungeon 🔫', 'Celeste 💖', 'Kandidatos', 'Brawlhalla',
-    'Fall Guys', 'Amongus', 'PUBG?', 'Hollow Knight', 'PAYDAY 2', 'Apex Legends', 'UNO', 'Dead by Daylight']
+    'Fall Guys', 'Amongus', 'PUBG?', 'Hollow Knight', 'PAYDAY 2', 'Apex Legends', 'UNO', 'Dead by Daylight', "Gartic", "Gartic Phone"]
     Listening = ['rei do gado', 'boa noite meu consagrado', 'bom dia meu chegado', 'mc poze nos anos 80', 'Skrillex',
     'Porter Robinson', 'Trilha sonora de space jam', 'Jonas Brothers', 'Joe Hisaishi', 'Tyler, The Creator', 'Tiao, o criador',
     'Kendrick Lamar', 'G-Eazy', 'OST de Undertale', 'OST de Chihiro', 'Gorillaz', 'Gorillaz - DARE', '911', 'EARFQUAKE', 
