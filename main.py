@@ -12,14 +12,10 @@ import utils.embed as embed
 from utils.colors import *
 
 import os
-import pathlib
-from pathlib import Path
-pathlib.Path().resolve()
 
 from dotenv import dotenv_values
 
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
-print("ENV: " + str(ENV))
 
 INITIAL_EXTENSIONS = [
     'cogs.manager',
