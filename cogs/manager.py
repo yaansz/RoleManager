@@ -56,6 +56,7 @@ class Manager(commands.Cog):
         
         return
 
+
     @create.error
     async def create_error(self, ctx, error):
         
@@ -66,6 +67,7 @@ class Manager(commands.Cog):
         else:
             await ctx.send(error, delete_after = self.delete_system_message)
 
+
     @commands.command(aliases=['deletar'], pass_context=True)
     @has_permissions(manage_roles = True)
     async def delete(self, ctx, role: discord.Role):
@@ -74,6 +76,7 @@ class Manager(commands.Cog):
 
         await role.delete()
         await ctx.send(f"**AVISO:** Cargo '{role.name}' apagado do servidor por <@{ctx.author.id}>!")
+
 
     @delete.error
     async def delete_error(self, ctx, error):
@@ -84,6 +87,7 @@ class Manager(commands.Cog):
             await ctx.send("**Erro:** Você não pode deletar um cargo!", delete_after = self.delete_system_message)
         else:
             await ctx.send(error, delete_after = self.delete_system_message)
+
 
     @commands.command(aliases=['linked'], pass_context=True)
     @has_permissions(manage_roles = True, manage_channels = True)
@@ -137,14 +141,40 @@ class Manager(commands.Cog):
     @linked_role.error
     async def linked_role_error(self, ctx, error):
         
-        await ctx.message.delete(delay=2)
+        await ctx.message.delete(delay = self.delete_user_message)
 
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after= self.delete_system_message)
         elif isinstance(error, ValueError):
             await ctx.send("**Erro:** Opção inválida! Tente 'Channel' ou 'Category'")
         else:
-            await ctx.send(error, delete_after= self.delete_system_message)
+            await ctx.send(error, delete_after = self.delete_system_message)
+
+
+    @commands.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
+    @has_permissions(manage_roles = True, manage_channels = True)
+    async def canread(self, ctx, role: discord.Role, canRead: bool, type: str = "channel"):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
+
+        if type == "category":
+            category = ctx.channel.category
+
+            if category != None:
+                await category.set_permissions(role, view_channel = canRead)
+                await ctx.send("Permissão alterada!", delete_after = self.delete_system_message)
+        elif type == "channel":
+
+            await ctx.channel.set_permissions(role, view_channel = canRead)
+            await ctx.send("Permissão alterada!", delete_after = self.delete_system_message)
+
+
+    @canread.error
+    async def canread_error(self, ctx, error):
+        
+        if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+            await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"', 
+                delete_after = self.delete_system_message)
 
 
 # Setup

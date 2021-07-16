@@ -62,7 +62,7 @@ async def update_status():
     elif result == status.Status.Watching:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=random.choice(result.value)))
     else:
-         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.unknown, name=random.choice(result.value)))
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.competing, name=random.choice(result.value)))
 
 
 @bot.event
@@ -107,29 +107,6 @@ async def on_guild_channel_update(before, after):
 
 # REWRITE THAT SHIT
 
-@bot.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
-@has_permissions(manage_roles = True, manage_channels = True)
-async def canread(ctx, role: discord.Role, canRead: bool, type: str = "channel"):
-    
-    await ctx.message.delete(delay=2)
-
-    if type == "category":
-        category = ctx.channel.category
-
-        if category != None:
-            await category.set_permissions(role, view_channel = canRead)
-            await ctx.send("Permissão alterada!")
-    elif type == "channel":
-
-        await ctx.channel.set_permissions(role, view_channel = canRead)
-        await ctx.send("Permissão alterada!")
-
-
-@canread.error
-async def canread_error(ctx, error):
-    
-    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-        await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"')
 
 @bot.command(aliases=['ajuda'], pass_context=True)
 async def commands(ctx):
@@ -160,4 +137,4 @@ async def commands(ctx):
 # bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
 
 # Test
-bot.run("ODY0ODUxMDA2NTEyNjkzMjQ4.YO7dRA.cX6nNc6S30V22lC9d83AcoGpjFI")
+bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.qPv5SaePUnK2innyAbcaPvzCOXs")
