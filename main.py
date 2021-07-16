@@ -13,6 +13,10 @@ from utils.colors import *
 
 import auxiliar
 
+import pathlib
+
+pathlib.Path().resolve()
+
 
 INITIAL_EXTENSIONS = [
     'cogs.manager',
