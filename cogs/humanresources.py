@@ -21,11 +21,11 @@ class HumanResources(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-        print("File      Path:", Path(__file__).absolute())
+        print("File      Path:", Path(__file__).parent.absolute())
         print("Directory Path:", Path().absolute())
 
         # Some good paramters like timer and other shits
-        with open(str(Path().absolute()) + '/database/utils.json', 'r') as f:
+        with open(str(Path().absolute()) + '/../database/utils.json', 'r') as f:
             info = json.load(f)
 
         self.delete_user_message = info['utils']['delete_user_message']
