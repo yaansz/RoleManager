@@ -11,12 +11,15 @@ import status.status as status
 import utils.embed as embed
 from utils.colors import *
 
-import auxiliar
-
+import os
 import pathlib
 from pathlib import Path
-
 pathlib.Path().resolve()
+
+from dotenv import dotenv_values
+
+ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
+print("ENV: " + str(ENV))
 
 INITIAL_EXTENSIONS = [
     'cogs.manager',
@@ -140,4 +143,4 @@ async def commands(ctx):
 # bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
 
 # Test
-bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.qPv5SaePUnK2innyAbcaPvzCOXs")
+bot.run(ENV['DISCORD_RM_TOKEN'])
