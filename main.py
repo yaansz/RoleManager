@@ -18,7 +18,6 @@ from pathlib import Path
 
 pathlib.Path().resolve()
 
-
 INITIAL_EXTENSIONS = [
     'cogs.manager',
     'cogs.humanresources',
