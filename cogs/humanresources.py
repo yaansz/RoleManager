@@ -95,7 +95,7 @@ class HumanResources(commands.Cog):
 
     
     @commands.command(aliases=['remover'], pass_context=True)
-    async def remove(self, ctx, role: Union[str, discord.Role] = "channel"):
+    async def remove(self, ctx, role: str = "channel"):
         
         await ctx.message.delete(delay = self.delete_user_message)
         
@@ -104,24 +104,9 @@ class HumanResources(commands.Cog):
         msg = ctx.message
         option = None
 
-        if isinstance(role, discord.Role):
-            pass
-        elif role.lower() == "channel":
-            option = msg.channel.category.name + " - " + msg.channel.name
-        elif role.lower() == "category":
-            option = msg.channel.category.name
-        else:
-            raise ValueError("")
-
-        found = False
-        if option is not None:
-            for r in guild.roles:
-                if r.name == option:
-                    role = r
-                    found = True
-                    break
-        
-        if option != None and not found:
+        try:
+            role = await converters.CtxRoleConverter().convert(ctx, role)
+        except commands.RoleNotFound:
             embedmsg = embed.createEmbed(title="Cargo não existe!", 
                 description = f"Você está tentando remover um cargo que não existe!",
                 color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
@@ -131,7 +116,6 @@ class HumanResources(commands.Cog):
 
             await ctx.message.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
             
-            # END
             return            
 
         if role not in author.roles:
