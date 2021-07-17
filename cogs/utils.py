@@ -32,7 +32,7 @@ class Utils(commands.Cog):
 
         await ctx.message.delete(delay= self.delete_user_message)
             
-        bot_member = ctx.guild.get_member(bot.user.id)
+        bot_member = ctx.guild.get_member(self.client.user.id)
 
         highest_bot_role = bot_member.roles[-1]
         
@@ -70,6 +70,8 @@ class Utils(commands.Cog):
             img="https://cdn.discordapp.com/emojis/812796371638812684.png?v=1")
 
         await ctx.message.channel.send(embed=embedmsg)
+
+    # PROBLEMAS PARA ATUALIZAR O CODIGO DO COLOR, EXIGE LEITURA
 
     @commands.command(aliases=['cor', 'setcolor'], pass_context=True)
     @has_permissions(manage_roles = True)

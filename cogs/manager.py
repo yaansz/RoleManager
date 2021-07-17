@@ -25,8 +25,12 @@ class Manager(commands.Cog):
 
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
-
     
+    @commands.command(aliases=['tests'], pass_context=True)
+    async def test(self, ctx, role: commands.RoleConverter):
+        await ctx.send(f"Cargo <@&{role.id}>")
+
+
     @commands.command(aliases=['criar'], pass_context=True)
     @has_permissions(manage_roles = True)
     async def create(self, ctx, *, args: str):
@@ -72,7 +76,7 @@ class Manager(commands.Cog):
 
     @commands.command(aliases=['deletar'], pass_context=True)
     @has_permissions(manage_roles = True)
-    async def delete(self, ctx, role: discord.Role):
+    async def delete(self, ctx, *, role: commands.RoleConverter):
 
         await ctx.message.delete(delay= self.delete_user_message)
 
@@ -111,33 +115,40 @@ class Manager(commands.Cog):
         else:
             raise ValueError("")
 
-        for r in guild.roles:
-            if r.name == option:
+        conv = commands.RoleConverter()
+        found = False
 
-                embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
-                description= f"O cargo <@&{r.id}> já está no servidor, não precisa criar de novo!🍻",
-                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-                fields=[
-                    ("Como pegar?", f"Apenas digite .get <@&{r.id}> e ele será adicionado na sua conta", False)
-                ],
-                img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
-
-                await msg.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
-
-                # Don't create again!
-                return
-
-        new_role = await guild.create_role(name=option, mentionable=True)
-
-        embedmsg = embed.createEmbed(title="Novo Cargo!", 
-            description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
+        # If found it
+        # The role already exists
+        try:
+            r = await conv.convert(ctx, option)
+            found = True
+        except commands.RoleNotFound: 
+            pass
+        
+        if found:
+            embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
+            description= f"O cargo <@&{r.id}> já está no servidor, não precisa criar de novo!🍻",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
-                ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@&{new_role.id}> e ele será adicionado na sua conta", False)
+                ("Como pegar?", f"Apenas digite .get <@&{r.id}> e ele será adicionado na sua conta", False)
             ],
-            img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
+            img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
 
-        await msg.channel.send(embed=embedmsg)
+            await msg.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+
+        else:
+            new_role = await guild.create_role(name=option, mentionable=True)
+
+            embedmsg = embed.createEmbed(title="Novo Cargo!", 
+                description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@&{new_role.id}> e ele será adicionado na sua conta", False)
+                ],
+                img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
+
+            await msg.channel.send(embed=embedmsg)
 
 
     @linked_role.error
@@ -177,6 +188,7 @@ class Manager(commands.Cog):
         if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
             await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"', 
                 delete_after = self.delete_system_message)
+
 
 
 # Setup
