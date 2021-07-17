@@ -32,7 +32,7 @@ class Utils(commands.Cog):
 
         await ctx.message.delete(delay= self.delete_user_message)
             
-        bot_member = ctx.guild.get_member(bot.user.id)
+        bot_member = ctx.guild.get_member(self.client.user.id)
 
         highest_bot_role = bot_member.roles[-1]
         
