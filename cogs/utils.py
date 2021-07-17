@@ -71,6 +71,8 @@ class Utils(commands.Cog):
 
         await ctx.message.channel.send(embed=embedmsg)
 
+    # PROBLEMAS PARA ATUALIZAR O CODIGO DO COLOR, EXIGE LEITURA
+
     @commands.command(aliases=['cor', 'setcolor'], pass_context=True)
     @has_permissions(manage_roles = True)
     async def color(self, ctx, role: discord.Role, *, args: str):
