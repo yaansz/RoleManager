@@ -131,7 +131,7 @@ class Manager(commands.Cog):
             description= f"O cargo <@&{r.id}> já está no servidor, não precisa criar de novo!🍻",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
-                ("Como pegar?", f"Apenas digite .get <@&{r.id}> e ele será adicionado na sua conta", False)
+                ("Como pegar?", f"Apenas digite '.get' e ele será adicionado na sua conta", False)
             ],
             img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
 
@@ -144,7 +144,7 @@ class Manager(commands.Cog):
                 description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
                 color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
                 fields=[
-                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@&{new_role.id}> e ele será adicionado na sua conta", False)
+                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get {new_role.name} e ele será adicionado na sua conta", False)
                 ],
                 img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
 

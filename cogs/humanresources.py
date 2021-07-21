@@ -41,19 +41,32 @@ class HumanResources(commands.Cog):
         msg = ctx.message
         option = None
 
+        # Just a temp
+        role_str = role
+
         try:
-            role = await converters.CtxRoleConverter().convert(ctx, role)
+            role = await converters.CtxRoleConverter().convert(ctx, role_str)
         except commands.RoleNotFound:
-            embedmsg = embed.createEmbed(title="Cargo não existe!", 
-                description= f"Infelizmente, o cargo que você deseja pegar não existe, pode tentar criar com o .linked ou .create",
-                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-                fields=[
-                ],
-                img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
+            
+            try:
+                
+                if role_str == "channel":
+                    role_str = "category"
+                    role = await converters.CtxRoleConverter().convert(ctx, role_str)
+                else:
+                    raise commands.RoleNotFound()
 
-            await ctx.message.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+            except commands.RoleNotFound:
+            
+                embedmsg = embed.createEmbed(title="Cargo não existe!", 
+                    description= f"Infelizmente, o cargo que você deseja pegar não existe, pode tentar criar com o .linked ou .create",
+                    color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                    fields=[
+                    ],
+                    img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
 
-            return
+                await ctx.message.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+                return
         
         if role in author.roles:
             embedmsg = embed.createEmbed(title="Você já possui esse cargo!", 
@@ -104,19 +117,30 @@ class HumanResources(commands.Cog):
         msg = ctx.message
         option = None
 
-        try:
-            role = await converters.CtxRoleConverter().convert(ctx, role)
-        except commands.RoleNotFound:
-            embedmsg = embed.createEmbed(title="Cargo não existe!", 
-                description = f"Você está tentando remover um cargo que não existe!",
-                color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-                fields = [
-                ],
-                img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
+        role_str = role
 
-            await ctx.message.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
+        try:
+            role = await converters.CtxRoleConverter().convert(ctx, role_str)
+        except commands.RoleNotFound:
             
-            return            
+            try:
+                if role_str == "channel":
+                    role_str = "category"
+                    role = await converters.CtxRoleConverter().convert(ctx, role_str)
+                else:
+                    raise commands.RoleNotFound()
+
+            except commands.RoleNotFound:
+                embedmsg = embed.createEmbed(title="Cargo não existe!", 
+                    description = f"Você está tentando remover um cargo que não existe!",
+                    color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                    fields = [
+                    ],
+                    img="https://cdn.discordapp.com/emojis/814603985842733107.png?v=1")
+
+                await ctx.message.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
+                
+                return            
 
         if role not in author.roles:
             embedmsg = embed.createEmbed(title="Você não possui esse cargo!", 
