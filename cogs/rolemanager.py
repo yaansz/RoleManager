@@ -11,7 +11,7 @@ from utils.colors import *
 import os
 
 
-class Manager(commands.Cog):
+class RoleManager(commands.Cog):
     """
         Manager is useful to create and delete roles.
         You can link a role to a chat or just create a role with a name that you like!
@@ -26,10 +26,6 @@ class Manager(commands.Cog):
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
     
-    @commands.command(aliases=['tests'], pass_context=True)
-    async def test(self, ctx, role: commands.RoleConverter):
-        await ctx.send(f"Cargo <@&{role.id}>")
-
 
     @commands.command(aliases=['criar'], pass_context=True)
     @has_permissions(manage_roles = True)
@@ -193,5 +189,5 @@ class Manager(commands.Cog):
 
 # Setup
 def setup(client):
-    client.add_cog(Manager(client))
+    client.add_cog(RoleManager(client))
 
