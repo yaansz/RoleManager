@@ -5,6 +5,8 @@ import random
 import copy
 from typing import Union
 
+# DB
+from pymongo import MongoClient
 
 # My things
 import status.status as status
@@ -18,9 +20,10 @@ from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
 INITIAL_EXTENSIONS = [
-    'cogs.manager',
+    'cogs.rolemanager',
     'cogs.humanresources',
-    'cogs.utils'
+    'cogs.utils',
+    'cogs.guildmanager'
 ]
 
 intents = discord.Intents.default()
@@ -35,6 +38,10 @@ for extension in INITIAL_EXTENSIONS:
         print('Failed to load extension {}\n{}: {}'.format(
             extension, type(e).__name__, e))
 
+# MONGO
+
+client = MongoClient('mongodb://localhost:27017/')
+guild_preferences_db = client['role-manager']['guild-preferences']
 
 # COMMANDS BELLOW 
 
@@ -46,6 +53,15 @@ async def on_ready():
     # Starting the loop
     update_status.start()
 
+
+@bot.command()
+async def preferences(ctx):
+
+    info = guild_preferences_db.find_one({"_id": ctx.guild.id})
+
+    await ctx.send(info)
+
+    return
 
 @tasks.loop(seconds=10)
 async def update_status():
