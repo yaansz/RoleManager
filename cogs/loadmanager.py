@@ -57,7 +57,7 @@ class LoadManager(commands.Cog):
             img="https://cdn.discordapp.com/emojis/767196592490807347.png?v=1")
 
         # Send that shit
-        await after.send(embed=embedmsg, delete_after = self.delete_system_message)
+        await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
 
 
     @load.error
@@ -80,7 +80,7 @@ class LoadManager(commands.Cog):
             img="https://cdn.discordapp.com/emojis/766457934905081887.png?v=1")
 
         # Send that shit
-        await after.send(embed=embedmsg, delete_after = self.delete_system_message)
+        await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
 
         
     
@@ -101,7 +101,7 @@ class LoadManager(commands.Cog):
             img="https://cdn.discordapp.com/emojis/767196592490807347.png?v=1")
 
         # Send that shit
-        await after.send(embed=embedmsg, delete_after = self.delete_system_message)
+        await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
 
     
     @commands.command()
@@ -132,7 +132,7 @@ class LoadManager(commands.Cog):
             img="https://cdn.discordapp.com/emojis/767196592490807347.png?v=1")
 
         # Send that shit
-        await after.send(embed=embedmsg, delete_after = self.delete_system_message)
+        await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
 
 # Setup
 def setup(client):
