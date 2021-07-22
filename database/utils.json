@@ -1,7 +1,14 @@
 {
     "utils" : 
     {
-        "delete_user_message" : 2,
+        "delete_user_message" : 0,
         "delete_system_message" : 10
+    },
+    "mongo" :
+    {
+        "host" : "mongodb://localhost:27017/",
+        "database" : "role-manager",
+        "collection" : "guild-preferences"
     }
+    
 }
