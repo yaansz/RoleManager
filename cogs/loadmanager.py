@@ -127,7 +127,7 @@ class LoadManager(commands.Cog):
             description= f"A extensão '{extension}' foi carregada!.",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
-                ("", lst, True)
+                ("Falhas?", lst if lst != "" else "Não!" , True)
             ],
             img="https://cdn.discordapp.com/emojis/767196592490807347.png?v=1")
 
