@@ -48,6 +48,7 @@ class GuildManager(commands.Cog):
 
         return
 
+
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         
@@ -55,21 +56,15 @@ class GuildManager(commands.Cog):
 
         return
 
+
     @commands.command(pass_context=True)
     @has_permissions(manage_roles = True)
     async def setprefix(self, ctx, prefix: str):
         """Create a new role with the given name
         """
 
-        with open(os.path.dirname(os.path.abspath(__file__))  + '/database/guilds.json', 'r') as f:
-            info = json.load(f)
-
-        g_id = str(guild.id) 
-
-        info[g_id]["prefix"] = prefix
-
-        with open(os.path.dirname(os.path.abspath(__file__))  + '/database/guilds.json', 'w') as f:
-            json.dump(info, f, indent=4)
+        self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
+        {'$set': {'prefix': prefix}})
 
         return
     

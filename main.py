@@ -17,6 +17,13 @@ import os
 
 from dotenv import dotenv_values
 
+# MONGO
+
+client = MongoClient('mongodb://localhost:27017/')
+guild_preferences_db = client['role-manager']['guild-preferences']
+
+# ENV + INIT 
+
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
 INITIAL_EXTENSIONS = [
@@ -26,9 +33,11 @@ INITIAL_EXTENSIONS = [
     'cogs.guildmanager'
 ]
 
+# BOT CONFIG
+
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix='.', intents=intents)
+bot = commands.Bot(command_prefix= lambda cli, msg: guild_preferences_db.find_one({"_id": msg.guild.id})['prefix'], intents=intents)
 
 # Extensions
 for extension in INITIAL_EXTENSIONS:
@@ -37,11 +46,6 @@ for extension in INITIAL_EXTENSIONS:
     except Exception as e:
         print('Failed to load extension {}\n{}: {}'.format(
             extension, type(e).__name__, e))
-
-# MONGO
-
-client = MongoClient('mongodb://localhost:27017/')
-guild_preferences_db = client['role-manager']['guild-preferences']
 
 # COMMANDS BELLOW 
 
