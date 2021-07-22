@@ -30,8 +30,8 @@ class GuildManager(commands.Cog):
         self.delete_system_message = info['utils']['delete_system_message']
 
         
-        self.db_client = MongoClient('mongodb://localhost:27017/')
-        self.guild_preferences_db = self.db_client['role-manager']['guild-preferences']
+        self.db_client = MongoClient(info['mongo']['host'])
+        self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
     
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -68,9 +68,31 @@ class GuildManager(commands.Cog):
 
         return
     
+    @commands.command()
+    async def preferences(self, ctx):
 
+        info = self.guild_preferences_db.find_one({"_id": ctx.guild.id})
+
+        guild = ctx.guild
+        author = ctx.author
+        msg = ctx.message
+
+        files = await commands.CategoryChannelConverter().convert(ctx, info['trash'])
+
+        embedmsg = embed.createEmbed(title="Preferências do servidor", 
+            description= f"Veja as opções definidas para o servidor",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+                ("Idioma", f"{info['lang']}", True),
+                ("Prefixo", f"{info['prefix']}", True),
+                ("Categoria Arquivos", f"{files.name}", True)
+            ],
+            img="https://cdn.discordapp.com/emojis/862024241951145984.gif?v=1")
+
+        # Send that shit
+        await msg.channel.send(embed=embedmsg)
     
-
+        return
 
 # Setup
 def setup(client):
