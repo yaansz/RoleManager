@@ -33,6 +33,7 @@ class GuildManager(commands.Cog):
         self.db_client = MongoClient(info['mongo']['host'])
         self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
     
+    
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
     
@@ -80,6 +81,27 @@ class GuildManager(commands.Cog):
         await ctx.message.channel.send(embed=embedmsg)
 
         return
+
+    
+    @commands.command(pass_context=True)
+    @has_permissions(manage_roles = True)
+    async def test(self, ctx):
+        """Create a new role with the given name
+        """
+
+        await ctx.message.delete(delay = self.delete_user_message)
+
+        embedmsg = embed.createEmbed(title="Testando!", 
+                    description= f"Alo Alo Alo 4",
+                    color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                    fields=[
+                    ],
+                    img="https://cdn.discordapp.com/emojis/808769255952089099.png?v=1")
+
+        await ctx.message.channel.send(embed=embedmsg)
+
+        return
+
     
     @commands.command(pass_context=True)
     @has_permissions(manage_channels = True)

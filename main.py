@@ -4,6 +4,7 @@ from discord.ext.commands import has_permissions, CheckFailure
 import random
 import copy
 from typing import Union
+import json
 
 # DB
 from pymongo import MongoClient
@@ -26,12 +27,6 @@ guild_preferences_db = client['role-manager']['guild-preferences']
 
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
-INITIAL_EXTENSIONS = [
-    'cogs.rolemanager',
-    'cogs.humanresources',
-    'cogs.utils',
-    'cogs.guildmanager'
-]
 
 # BOT CONFIG
 
@@ -39,8 +34,12 @@ intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix = lambda cli, msg: guild_preferences_db.find_one({"_id": msg.guild.id})['prefix'], intents=intents)
 
+
+with open(os.path.dirname(os.path.abspath(__file__))  + '/database/utils.json', 'r') as f:
+    extensions = json.load(f)["INITIAL_EXTENSIONS"]
+
 # Extensions
-for extension in INITIAL_EXTENSIONS:
+for extension in extensions:
     try:
         bot.load_extension(extension)
     except Exception as e:
