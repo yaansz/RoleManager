@@ -106,6 +106,9 @@ class LoadManager(commands.Cog):
     
     @commands.command()
     async def reloadall(self, ctx):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
+        
         with open(os.path.dirname(os.path.abspath(__file__))  + '/../database/utils.json', 'r') as f:
             extensions = json.load(f)["INITIAL_EXTENSIONS"]
 
@@ -124,7 +127,7 @@ class LoadManager(commands.Cog):
         
 
         embedmsg = embed.createEmbed(title="As extensões foram carregadas!", 
-            description= f"A extensão '{extension}' foi carregada!.",
+            description= f"As extensões foram recarregada!.",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
                 ("Falhas?", lst if lst != "" else "Não!" , True)
