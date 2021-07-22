@@ -83,43 +83,6 @@ async def on_command_error(ctx, error):
     print(error)
 
 
-@bot.event
-async def on_guild_channel_update(before, after):
-    '''
-    Function to monitor guild channels and delete a role linked to a channel if the channel was moved to trash
-    '''
-    # Mudou de categoria
-    if before == None or after == None:
-        return 
-
-    if before.category.name != after.category.name:
-        print(f"Canal '{after.name}' mudou de '{before.category.name}' para {after.category.name}")
-         
-        guild = after.guild
-        info = guild_preferences_db.find_one({"_id": guild.id})
-        
-        # Nome criado sempre que um chat é linkado a uma categoria!
-        role_name = before.category.name + " - " + before.name
-
-        # Categoria que devo deletar o cargo
-        if after.category.id == info['archives']:
-
-            print("ID encontrado")
-
-            for r in guild.roles:
-                if r.name == role_name:
-                    await r.delete()
-                    embedmsg = embed.createEmbed(title="Cargo associado excluído!", 
-                        description= f"O cargo '{role_name}' associado ao canal foi excluído devido a movimentação do mesmo para os arquivos.",
-                        color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-                        fields=[
-                        ],
-                        img="https://cdn.discordapp.com/emojis/753575574546415656.png?v=1")
-
-                    # Send that shit
-                    await after.send(embed=embedmsg)
-                    return
-
 
 # TODO - deixar aquela caixa bonita lá
 

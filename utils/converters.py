@@ -12,8 +12,10 @@ class CtxRoleConverter(commands.Converter):
         converter = commands.RoleConverter()
         found = False
         
-        if arguments.lower() == "channel":
+        if arguments.lower() == "channel" and msg.channel.category != None:
             arguments = msg.channel.category.name + " - " + msg.channel.name
+        elif arguments.lower() == "channel":
+            arguments = msg.channel.name
         elif arguments.lower() == "category":
             arguments = msg.channel.category.name
         

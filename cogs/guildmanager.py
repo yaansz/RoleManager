@@ -56,6 +56,10 @@ class GuildManager(commands.Cog):
 
         return
 
+    @commands.Cog.listener()
+    async def on_guild_channel_update(self, before, after):
+        return
+
 
     @commands.command(pass_context=True)
     @has_permissions(manage_roles = True)

@@ -27,6 +27,66 @@ class RoleManager(commands.Cog):
         self.delete_system_message = info['utils']['delete_system_message']
     
 
+    @commands.Cog.listener()
+    async def on_guild_channel_update(self, before, after):
+        '''
+        Function to monitor guild channels and delete a role linked to a channel if the channel was moved to trash
+        '''
+        # Mudou de categoria
+        if before == None or after == None:
+            return 
+
+        if before.category.name != after.category.name:
+            print(f"Canal '{after.name}' mudou de '{before.category.name}' para {after.category.name}")
+            
+            guild = after.guild
+            info = guild_preferences_db.find_one({"_id": guild.id})
+            
+            # Nome criado sempre que um chat é linkado a uma categoria!
+            role_name = before.category.name + " - " + before.name
+
+            # Categoria que devo deletar o cargo
+            if after.category.id == info['archives']:
+
+                for r in guild.roles:
+                    if r.name == role_name:
+                        await r.delete()
+                        embedmsg = embed.createEmbed(title="Cargo associado excluído!", 
+                            description= f"O cargo '{role_name}' associado ao canal foi excluído devido a movimentação do mesmo para os arquivos.",
+                            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                            fields=[
+                            ],
+                            img="https://cdn.discordapp.com/emojis/753575574546415656.png?v=1")
+
+                        # Send that shit
+                        await after.send(embed=embedmsg)
+                        return
+
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel):
+        
+        target_type_channels = ["text", "category"]
+
+        if channel.type.name.lower() not in target_type_channels:
+            return
+
+
+        if channel.type.name.lower() == "text" and channel.category != None:
+            option = channel.category.name + " - " + channel.name
+        elif channel.type.name.lower() == "text":
+            option = channel.name
+        else:
+            option = channel.name
+
+        for r in channel.guild.roles:
+            if r.name == option:
+                role = r
+                await role.delete()
+                break
+                 
+        return
+
     @commands.command(aliases=['criar'], pass_context=True)
     @has_permissions(manage_roles = True)
     async def create(self, ctx, *, args: str):
@@ -104,8 +164,10 @@ class RoleManager(commands.Cog):
         author = ctx.author
         msg = ctx.message
         
-        if type.lower() == "channel":
+        if type.lower() == "channel" and msg.channel.category != None:
             option = msg.channel.category.name + " - " + msg.channel.name
+        elif type.lower() == "channel":
+            option = msg.channel.name
         elif type.lower() == "category":
             option = msg.channel.category.name
         else:
