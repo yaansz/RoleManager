@@ -123,7 +123,7 @@ class GuildManager(commands.Cog):
             fields=[
                 ("Idioma", f"{info['lang']}", True),
                 ("Prefixo", f"{info['prefix']}", True),
-                ("Categoria Arquivos", f"{archives.name}", True)
+                ("Categoria Arquivos", f"{archives}", True)
             ],
             img="https://cdn.discordapp.com/emojis/443814368858341426.png?v=1")
 
