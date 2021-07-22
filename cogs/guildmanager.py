@@ -41,7 +41,7 @@ class GuildManager(commands.Cog):
             "_id": guild.id,
             "prefix": '.', 
             "lang": "pt-br",
-            "trash": None
+            "archives": None
         }
 
         g_id = self.guild_preferences_db.insert_one(info).inserted_id
@@ -66,8 +66,42 @@ class GuildManager(commands.Cog):
         self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
         {'$set': {'prefix': prefix}})
 
+        embedmsg = embed.createEmbed(title="Prefixo atualizado!", 
+                    description= f"O novo prefixo do servidor agora é '{prefix}'",
+                    color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                    fields=[
+                    ],
+                    img="https://cdn.discordapp.com/emojis/808769255952089099.png?v=1")
+
+        await ctx.message.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+
         return
     
+    @commands.command(pass_context=True)
+    @has_permissions(manage_channels = True)
+    async def setarchives(self, ctx):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
+
+        self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
+        {'$set': {'archives': ctx.channel.category.id}})
+
+        guild = ctx.guild
+        author = ctx.author
+        msg = ctx.message
+
+        embedmsg = embed.createEmbed(title="Categoria de arquivos atualizada!", 
+            description= f"Os arquivos foram definidos na categoria '{ctx.channel.category.name}' por <@{ctx.author.id}>",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+            ],
+            img="https://cdn.discordapp.com/emojis/443814368858341426.png?v=1")
+
+        # Send that shit
+        await msg.channel.send(embed=embedmsg)
+
+        return
+
     @commands.command()
     async def preferences(self, ctx):
 
@@ -77,7 +111,11 @@ class GuildManager(commands.Cog):
         author = ctx.author
         msg = ctx.message
 
-        files = await commands.CategoryChannelConverter().convert(ctx, info['trash'])
+        try:
+            archives = await commands.CategoryChannelConverter().convert(ctx, info['archives'])
+            archives = archives.name
+        except:
+            archives = "Não definido"
 
         embedmsg = embed.createEmbed(title="Preferências do servidor", 
             description= f"Veja as opções definidas para o servidor",
@@ -85,9 +123,9 @@ class GuildManager(commands.Cog):
             fields=[
                 ("Idioma", f"{info['lang']}", True),
                 ("Prefixo", f"{info['prefix']}", True),
-                ("Categoria Arquivos", f"{files.name}", True)
+                ("Categoria Arquivos", f"{archives.name}", True)
             ],
-            img="https://cdn.discordapp.com/emojis/862024241951145984.gif?v=1")
+            img="https://cdn.discordapp.com/emojis/443814368858341426.png?v=1")
 
         # Send that shit
         await msg.channel.send(embed=embedmsg)

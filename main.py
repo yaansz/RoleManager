@@ -94,25 +94,30 @@ async def on_guild_channel_update(before, after):
 
     if before.category.name != after.category.name:
         print(f"Canal '{after.name}' mudou de '{before.category.name}' para {after.category.name}")
-    
-        # TODO - Memória para o Boninho My Friend
-        ids = [851546649599279124, 864639672177262592]
-        
+         
         guild = after.guild
-
-
+        info = guild_preferences_db.find_one({"_id": guild.id})
+        
         # Nome criado sempre que um chat é linkado a uma categoria!
         role_name = before.category.name + " - " + before.name
 
         # Categoria que devo deletar o cargo
-        if after.category.id in ids:
+        if after.category.id == info['archives']:
 
             print("ID encontrado")
 
             for r in guild.roles:
                 if r.name == role_name:
                     await r.delete()
-                    await after.send(f"O cargo {role_name} foi deletado!")
+                    embedmsg = embed.createEmbed(title="Cargo associado excluído!", 
+                        description= f"O cargo '{role_name}' associado ao canal foi excluído devido a movimentação do mesmo para os arquivos.",
+                        color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                        fields=[
+                        ],
+                        img="https://cdn.discordapp.com/emojis/753575574546415656.png?v=1")
+
+                    # Send that shit
+                    await after.send(embed=embedmsg)
                     return
 
 
@@ -145,9 +150,6 @@ async def commands(ctx):
 
     await ctx.message.channel.send(embed=embedmsg)
 
-
-# Official
-# bot.run("ODY0NTU5MjM5MTg3NTI5NzQ5.YO3NiQ.maahbMxUj_p5Yyga8eXA3H9O_uY")
 
 # Test
 bot.run(ENV['DISCORD_RM_TOKEN'])
