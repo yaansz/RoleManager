@@ -16,16 +16,17 @@ from utils.colors import *
 
 import os
 
+# ENV
 from dotenv import dotenv_values
+ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
 # MONGO
 
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient(ENV['MONGODB'])
 guild_preferences_db = client['role-manager']['guild-preferences']
 
 # ENV + INIT 
 
-ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
 
 # BOT CONFIG

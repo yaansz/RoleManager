@@ -13,6 +13,9 @@ import utils.converters as converters
 
 import os
 
+# ENV
+from dotenv import dotenv_values
+ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
 
 class HumanResources(commands.Cog):
     """

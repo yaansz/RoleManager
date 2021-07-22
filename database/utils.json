@@ -6,9 +6,8 @@
     },
     "mongo" :
     {
-        "host" : "mongodb://localhost:27017/",
         "database" : "role-manager",
-        "collection" : "guildpreferences"
+        "collection" : "guild-preferences"
     },
     "INITIAL_EXTENSIONS" : [
         "cogs.rolemanager",

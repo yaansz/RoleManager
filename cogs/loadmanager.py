@@ -13,6 +13,9 @@ from utils.colors import *
 
 import os
 
+# ENV
+from dotenv import dotenv_values
+ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
 
 class LoadManager(commands.Cog):
     """
@@ -30,7 +33,7 @@ class LoadManager(commands.Cog):
         self.delete_system_message = info['utils']['delete_system_message']
 
         
-        self.db_client = MongoClient(info['mongo']['host'])
+        self.db_client = MongoClient(ENV['MONGODB'])
         self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
     
     
