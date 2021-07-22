@@ -149,13 +149,11 @@ class GuildManager(commands.Cog):
         guild = ctx.guild
         author = ctx.author
         msg = ctx.message
-
         try:
-            archives = await commands.CategoryChannelConverter().convert(ctx, info['archives'])
+            archives = await commands.CategoryChannelConverter().convert(ctx, str(info['archives']))
             archives = archives.name
         except:
             archives = "Não definido"
-
         embedmsg = embed.createEmbed(title="Preferências do servidor", 
             description= f"Veja as opções definidas para o servidor",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
