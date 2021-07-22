@@ -13,6 +13,9 @@ from utils.colors import *
 
 import os
 
+# ENV
+from dotenv import dotenv_values
+ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
 
 class GuildManager(commands.Cog):
     """
@@ -30,9 +33,20 @@ class GuildManager(commands.Cog):
         self.delete_system_message = info['utils']['delete_system_message']
 
         
-        self.db_client = MongoClient(info['mongo']['host'])
+        self.db_client = MongoClient(ENV['MONGODB'])
         self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
     
+    @commands.Cog.listener()
+    async def on_message(self, msg):
+        
+
+        if msg.content == ".reset rolemanager":
+            try:
+                self.guild_preferences_db.delete_one({"_id": msg.guild.id})
+            except:
+                pass
+            await self.on_guild_join(msg.guild)
+            await msg.reply("Preferências do bot foram restauradas aos valores padrões!")
     
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
