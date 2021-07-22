@@ -25,6 +25,8 @@ ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
 client = MongoClient(ENV['MONGODB'])
 guild_preferences_db = client['role-manager']['guild-preferences']
 
+print("MONGO DB: " + ENV['MONGODB'])
+
 # ENV + INIT 
 
 

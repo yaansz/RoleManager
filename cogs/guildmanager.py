@@ -39,8 +39,7 @@ class GuildManager(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, msg):
         
-
-        if msg.content == ".reset rolemanager":
+        if msg.content == "reset rolemanager":
             try:
                 self.guild_preferences_db.delete_one({"_id": msg.guild.id})
             except:
