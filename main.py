@@ -37,7 +37,7 @@ INITIAL_EXTENSIONS = [
 
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix= lambda cli, msg: guild_preferences_db.find_one({"_id": msg.guild.id})['prefix'], intents=intents)
+bot = commands.Bot(command_prefix = lambda cli, msg: guild_preferences_db.find_one({"_id": msg.guild.id})['prefix'], intents=intents)
 
 # Extensions
 for extension in INITIAL_EXTENSIONS:
@@ -57,15 +57,6 @@ async def on_ready():
     # Starting the loop
     update_status.start()
 
-
-@bot.command()
-async def preferences(ctx):
-
-    info = guild_preferences_db.find_one({"_id": ctx.guild.id})
-
-    await ctx.send(info)
-
-    return
 
 @tasks.loop(seconds=10)
 async def update_status():
