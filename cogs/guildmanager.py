@@ -73,7 +73,7 @@ class GuildManager(commands.Cog):
                     ],
                     img="https://cdn.discordapp.com/emojis/808769255952089099.png?v=1")
 
-        await ctx.message.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+        await ctx.message.channel.send(embed=embedmsg)
 
         return
     
