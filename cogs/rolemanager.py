@@ -10,6 +10,10 @@ from utils.colors import *
 
 import os
 
+#DB
+from pymongo import MongoClient
+
+
 # ENV
 from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
@@ -29,7 +33,10 @@ class RoleManager(commands.Cog):
 
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
-    
+
+        self.db_client = MongoClient(ENV['MONGODB'])
+        self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
+
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
@@ -37,17 +44,19 @@ class RoleManager(commands.Cog):
         Function to monitor guild channels and delete a role linked to a channel if the channel was moved to trash
         '''
         # Mudou de categoria
-        if before == None or after == None:
+        if after.category == None:
             return 
-
-        if before.category.name != after.category.name:
-            print(f"Canal '{after.name}' mudou de '{before.category.name}' para {after.category.name}")
+        elif (before.category == None and after.category != None) or (before.category.id != after.category.id):
             
             guild = after.guild
-            info = guild_preferences_db.find_one({"_id": guild.id})
+            info = self.guild_preferences_db.find_one({"_id": guild.id})
             
             # Nome criado sempre que um chat é linkado a uma categoria!
-            role_name = before.category.name + " - " + before.name
+
+            if before.category != None:
+                role_name = before.category.name + " - " + before.name
+            else:
+                role_name = before.name
 
             # Categoria que devo deletar o cargo
             if after.category.id == info['archives']:
