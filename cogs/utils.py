@@ -118,6 +118,21 @@ class Utils(commands.Cog):
             await ctx.send(error, delete_after = self.delete_system_message)
     
 
+    @commands.command(pass_context=True)
+    async def changenickname(self, ctx, *, args: str):
+        """Create a new role with the given name
+        """
+        ctx.author.display_name = args
+
+    @changenickname.error
+    async def changenickname_error(self, ctx, error):
+        
+        await ctx.message.delete(delay=2)
+
+        await ctx.send(error, delete_after = self.delete_system_message)
+
+
+
 # Setup
 def setup(client):
     client.add_cog(Utils(client))
