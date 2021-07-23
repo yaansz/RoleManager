@@ -122,7 +122,7 @@ class Utils(commands.Cog):
     async def changenickname(self, ctx, *, args: str):
         """Create a new role with the given name
         """
-        await member.edit(nick=args)
+        await ctx.author.edit(nick=args)
 
     @changenickname.error
     async def changenickname_error(self, ctx, error):
