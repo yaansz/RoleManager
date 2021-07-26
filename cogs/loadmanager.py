@@ -39,13 +39,11 @@ class LoadManager(commands.Cog):
         
         self.db_client = MongoClient(ENV['MONGODB'])
         self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
-    
-    
+
+       
     @commands.command()
     @commands.check(isOwner)
     async def load(self, ctx, extension: str):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
         
         self.client.load_extension(f"cogs.{extension}")
         
@@ -60,15 +58,9 @@ class LoadManager(commands.Cog):
         await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
 
 
-    @load.error
-    async def owner_error(error, ctx):
-        if isinstance(error, commands.MissingPermissions):
-            ctx.send("Você não tem permissão para executar o comando!")
-
     @commands.command()
+    @commands.check(isOwner)
     async def unload(self, ctx, extension: str):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
         
         self.client.unload_extension(f"cogs.{extension}")
         
@@ -85,13 +77,10 @@ class LoadManager(commands.Cog):
         
     
     @commands.command()
+    @commands.check(isOwner)
     async def reload(self, ctx, extension: str):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
-        
+           
         self.client.reload_extension(f"cogs.{extension}")
-
-        await ctx.message.delete(delay = self.delete_user_message)
         
         embedmsg = embed.createEmbed(title="Extensão recarregada com sucesso!", 
             description= f"A extensão '{extension}' foi recarregada!.",
@@ -105,9 +94,8 @@ class LoadManager(commands.Cog):
 
     
     @commands.command()
+    @commands.check(isOwner)
     async def reloadall(self, ctx):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
         
         with open(os.path.dirname(os.path.abspath(__file__))  + '/../database/utils.json', 'r') as f:
             extensions = json.load(f)["INITIAL_EXTENSIONS"]
@@ -122,10 +110,7 @@ class LoadManager(commands.Cog):
                 lst += 'Falha ao recarregar {}\n{}: {}\n'.format(
                     extension, type(e).__name__, e)
         
-
-        await ctx.message.delete(delay = self.delete_user_message)
         
-
         embedmsg = embed.createEmbed(title="As extensões foram carregadas!", 
             description= f"As extensões foram recarregada!.",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
@@ -136,6 +121,26 @@ class LoadManager(commands.Cog):
 
         # Send that shit
         await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
+
+    @load.error
+    @unload.error
+    @reloadall.error
+    async def owner_error(self, ctx, error):
+        
+        if isinstance(error, CheckFailure):
+            
+            embedmsg = embed.createEmbed(title="Você não pode executar esse comando!", 
+            description= f"Comando exclusivo para os desenvolvedores do bot",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+            ],
+            img="https://cdn.discordapp.com/emojis/844662458622935092.png?v=1")
+
+            await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
+        else:
+    
+            await ctx.send(error, delete_after= self.delete_system_message)
+
 
 # Setup
 def setup(client):
