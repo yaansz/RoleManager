@@ -151,7 +151,7 @@ class HumanResources(commands.Cog):
                 color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
                 fields = [
                 ],
-                img="https://cdn.discordapp.com/emojis/853000725822308412.png?v=1", delete_after= self.delete_system_message)
+                img="https://cdn.discordapp.com/emojis/853000725822308412.png?v=1")
 
             await ctx.message.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
 
