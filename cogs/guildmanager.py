@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure
+from discord.ext.commands import errors
 
 #DB
 from pymongo import MongoClient
@@ -79,7 +80,7 @@ class GuildManager(commands.Cog):
 
 
     @commands.command(pass_context=True)
-    @has_permissions(manage_roles = True)
+    @has_permissions(administrator = True)
     async def setprefix(self, ctx, prefix: str):
         """Create a new role with the given name
         """
@@ -94,11 +95,14 @@ class GuildManager(commands.Cog):
                     ],
                     img="https://cdn.discordapp.com/emojis/808769255952089099.png?v=1")
 
+        await ctx.send(embed=embedmsg)
+
+
         return
 
-
+    
     @commands.command(pass_context=True)
-    @has_permissions(manage_channels = True)
+    @has_permissions(administrator = True)
     async def setarchives(self, ctx):
         
         self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
@@ -119,6 +123,42 @@ class GuildManager(commands.Cog):
         await msg.channel.send(embed=embedmsg)
 
         return
+    
+
+    @setarchives.error
+    @setprefix.error
+    async def guild_errors(self, ctx, error):
+        
+        if isinstance(error, CheckFailure):
+            
+            embedmsg = embed.createEmbed(title="Você não pode executar esse comando!", 
+            description= f"Apenas administradores podem usar esse comando!",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+            ],
+            img="https://cdn.discordapp.com/emojis/844662458622935092.png?v=1")
+
+            await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
+        
+        elif isinstance(error, errors.MissingRequiredArgument):
+
+            info = self.guild_preferences_db.find_one({"_id": ctx.guild.id}) 
+
+            embedmsg = embed.createEmbed(title="Você não passou argumentos suficientes!", 
+            description= f"Utilize '{info['prefix']}prefix 'Prefixo'' para setar um novo prefixo para o servidor.",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+            ],
+            img="https://cdn.discordapp.com/emojis/852737778722275359.gif?v=1")
+
+            await ctx.send(embed=embedmsg, delete_after = self.delete_system_message)
+
+
+        else:
+    
+            await ctx.send(error, delete_after= self.delete_system_message)
+
+
 
     @commands.command()
     async def preferences(self, ctx):
