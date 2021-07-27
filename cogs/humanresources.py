@@ -173,7 +173,6 @@ class HumanResources(commands.Cog):
     @remove.error
     async def remove_error(self, ctx, error):
         
-        await ctx.message.delete(delay = self.delete_user_message)
 
         await ctx.send(error, delete_after= self.delete_system_message)
 
