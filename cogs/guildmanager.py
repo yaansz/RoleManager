@@ -94,37 +94,13 @@ class GuildManager(commands.Cog):
                     ],
                     img="https://cdn.discordapp.com/emojis/808769255952089099.png?v=1")
 
-        await ctx.message.channel.send(embed=embedmsg)
-
         return
 
-    
-    @commands.command(pass_context=True)
-    @has_permissions(manage_roles = True)
-    async def test(self, ctx):
-        """Create a new role with the given name
-        """
 
-        await ctx.message.delete(delay = self.delete_user_message)
-
-        embedmsg = embed.createEmbed(title="Testando!", 
-                    description= f"Alo Alo Alo 4",
-                    color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-                    fields=[
-                    ],
-                    img="https://cdn.discordapp.com/emojis/808769255952089099.png?v=1")
-
-        await ctx.message.channel.send(embed=embedmsg)
-
-        return
-
-    
     @commands.command(pass_context=True)
     @has_permissions(manage_channels = True)
     async def setarchives(self, ctx):
         
-        await ctx.message.delete(delay = self.delete_user_message)
-
         self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
         {'$set': {'archives': ctx.channel.category.id}})
 
