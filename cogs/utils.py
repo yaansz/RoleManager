@@ -46,6 +46,7 @@ class Utils(commands.Cog):
 
         string = "Lista: "
         
+        # easteregg
         #fields = [("Lista: ", "⠀⠀", False)]
         fields = []
 
@@ -63,7 +64,7 @@ class Utils(commands.Cog):
         if fields == []:
             fields.append((string, lst, False))
 
-
+        
         fields.append(("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@ do cargo> e ele será adicionado na sua conta", False)
         )
 
