@@ -21,35 +21,27 @@ from utils.colors import *
 
 import os
 
-
-# ENV
 from dotenv import dotenv_values
-ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
-
-# LOG
-logger.init_log()
-
-# Discord log config
-logging.getLogger("discord").setLevel(logging.WARNING)
-
 
 class Bot(commands.Bot):
 
     def __init__(self):        
         self.log = logging.getLogger(__name__)
         
-        # some shit to make it work
-        intents = discord.Intents.default()
-        intents.members = True
 
-        self.client = MongoClient(ENV['MONGODB'])
-        self.guild_preferences_db = self.client['role-manager']['guild-preferences']
+        self.db_client = MongoClient(ENV['MONGODB'])
+        self.guild_preferences_db = self.db_client['role-manager']['guild-preferences']
         self.log.debug("Guild preferences database initialized")
         
         
         # BOT CONFIG
+        # some shit to make it work
+        intents = discord.Intents.default()
+        intents.members = True
         # Super Constructor
-        super().__init__(command_prefix = lambda cli, msg: guild_preferences_db.find_one({"_id": msg.guild.id})['prefix'], intents=intents)
+        super().__init__(command_prefix = lambda cli, 
+                        msg: self.guild_preferences_db.find_one({"_id": msg.guild.id})['prefix'], 
+                        intents=intents)
         self.log.debug("Bot basic setup initialized")
 
 
@@ -100,6 +92,14 @@ class Bot(commands.Bot):
     def run(self, token):
         super().run(token)
 
-# Started :D
-bot = Bot()
-bot.run(ENV['DISCORD_RM_TOKEN'])
+
+if __name__ == "__main__":
+    ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
+    # LOG
+    logger.init_log()
+    logging.getLogger("discord").setLevel(logging.WARNING)
+    logging.debug("Removed Discord.py logs")
+    
+    
+    bot = Bot()
+    bot.run(ENV['DISCORD_RM_TOKEN'])
