@@ -125,3 +125,6 @@ dmypy.json
 
 
 *.save
+
+# LOG
+*.log

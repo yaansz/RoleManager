@@ -12,6 +12,7 @@ from utils.colors import *
 
 import os
 
+
 # ENV
 from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
