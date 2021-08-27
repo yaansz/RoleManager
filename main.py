@@ -89,9 +89,6 @@ class Bot(commands.Bot):
         print(error)
 
 
-    def run(self, token):
-        super().run(token)
-
 
 if __name__ == "__main__":
     ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
