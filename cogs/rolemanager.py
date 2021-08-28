@@ -2,6 +2,10 @@ import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure
 
+from utils.converters import CtxRoleConverter
+from utils.utils import str2bool
+
+
 import random
 import json
 
@@ -224,6 +228,61 @@ class RoleManager(commands.Cog):
             self.log.error(f"{error} - creation of a new role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
 
+    
+    # AAAAAAAAAAAAAAAAAAAAAAAAAAAAA I'll need to split everything in one arg
+    # async def permission(self, ctx, role: CtxRoleConverter, permission_to_change: str, status: bool)
+
+    @commands.command(pass_context=True)
+    @has_permissions(manage_roles = True, manage_channels = True)
+    async def permission(self, ctx, *, args: str):
+        """
+        Arg List:
+
+        ctx  -> Discord Context
+        role -> CtxRoleConverter
+        mode -> channel, category or role
+        perm -> permission to change
+        bool -> bool
+
+        """
+
+        self.log.debug(f"Permission debug: {args}".encode('ascii', 'ignore').decode('ascii'))
+
+        splitted_args = args.split(' ')
+
+        if len(args) < 4:
+            # Just for now
+            self.log.debug("Missing args")
+            return;
+
+        
+        print(splitted_args)
+
+        can = str2bool(splitted_args[-1])
+        perm = splitted_args[-2]
+        mode = splitted_args[-3]
+
+        role_name = ' '.join(splitted_args[:-3])
+
+        print(role_name)
+
+        status, role = await self.role_exists(ctx, role_name)
+
+        overwrite = discord.PermissionOverwrite()
+
+        print(f"role: {role.name} : mode: {mode} : perm: {perm} : can: {can}")
+
+        if perm == "read_messages":
+            overwrite.read_messages = can
+
+        category = ctx.channel.category
+
+
+        await category.set_permissions(role, overwrite = overwrite)
+        
+        print(f'Change permission {perm} in current category to role {role.name} to {can}')
+
+        return
 
     # TODO: THIS FUNCTION NEED TO BE REWRITED
 

@@ -56,7 +56,6 @@ class GuildManager(commands.Cog):
     async def on_guild_join(self, guild):
     
         info = {
-
             "_id": guild.id,
             "prefix": '.', 
             "lang": "pt-br",
