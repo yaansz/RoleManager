@@ -113,43 +113,92 @@ class RoleManager(commands.Cog):
         """Create a new role with the given name
         """
 
-        self.log.debug(f"create command args: {args}")
+        linked_keys = ["channel", "category"]
 
-        # Deleting the message in n seconds after it was sent
-        await ctx.message.delete(delay = self.delete_user_message)
+        role_name = self.linked_role(ctx, args) if args in linked_keys else args
+    
 
         # Defining useful variables
         guild = ctx.guild
         author = ctx.author
         msg = ctx.message
 
-        # New Role Created!
-        result = await guild.create_role(name=args, mentionable=True)
+        role_exists, role = await self.role_exists(ctx, role_name)
 
-        # Embed Message
-        embedmsg = embed.createEmbed(title="Novo Cargo!", 
-            description= f"O cargo <@&{result.id}> foi criado por <@{author.id}>",
+        if role_exists:
+            embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
+            description= f"O cargo <@&{role.id}> já está no servidor, não precisa criar de novo!🍻",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
-                ("Como pegar?", f"Apenas digite .get <@&{result.id}> e ele será adicionado na sua conta", False)
+                ("Como pegar?", f"Apenas digite '.get' e ele será adicionado na sua conta", False)
             ],
-            img="https://cdn.discordapp.com/emojis/862024241951145984.gif?v=1")
+            img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
 
-        # Send that shit
-        await msg.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
-        
+            await msg.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+
+        else:
+            # New Role Created!
+            new_role = await guild.create_role(name=role_name, mentionable=True)
+            self.log.info( (f"New role '{new_role.name}' created in guild {guild.name} : {guild.id}").encode('ascii', 'ignore').decode('ascii') )
+
+
+            # TODO: Especificar a mensagem de acordo com o cargo que foi criado!
+            embedmsg = embed.createEmbed(title="Novo Cargo!", 
+                description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get {new_role.name} e ele será adicionado na sua conta", False)
+                ],
+                img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
+
+            await msg.channel.send(embed=embedmsg)
+
+
+
         return
 
 
     @create.error
     async def create_error(self, ctx, error):
         
-        await ctx.message.delete(delay=2)
-
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after = self.delete_system_message)
         else:
             await ctx.send(error, delete_after = self.delete_system_message)
+
+
+    async def role_exists(self, ctx, role_name):
+        conv = commands.RoleConverter()
+
+        # If found it
+        # The role already exists
+        try:
+            r = await conv.convert(ctx, role_name)   
+            return True, r
+
+        except commands.RoleNotFound: 
+            return False, None
+        
+        
+
+    def linked_role(self, ctx, type: str):
+        """
+            This function creates a role linked to a channel or a category, it's very useful to ping everyone who is interested to an specific chat, like a discipline or a very interesting topic
+        """
+        guild = ctx.guild
+        author = ctx.author
+        msg = ctx.message
+        
+        if type.lower() == "channel" and msg.channel.category != None:
+            option = msg.channel.category.name + " - " + msg.channel.name
+        elif type.lower() == "channel":
+            option = msg.channel.name
+        elif type.lower() == "category":
+            option = msg.channel.category.name
+        else:
+            raise ValueError("")
+
+        return option;
 
 
     @commands.command(aliases=['deletar'], pass_context=True)
@@ -169,77 +218,6 @@ class RoleManager(commands.Cog):
 
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode deletar um cargo!", delete_after = self.delete_system_message)
-        else:
-            await ctx.send(error, delete_after = self.delete_system_message)
-
-
-    @commands.command(aliases=['linked'], pass_context=True)
-    @has_permissions(manage_roles = True, manage_channels = True)
-    async def linked_role(self, ctx, type: str = "channel"):
-        """
-            This function creates a role linked to a channel or a category, it's very useful to ping everyone who is interested to an specific chat, like a discipline or a very interesting topic
-        """
-
-        await ctx.message.delete(delay = self.delete_user_message)
-
-        guild = ctx.guild
-        author = ctx.author
-        msg = ctx.message
-        
-        if type.lower() == "channel" and msg.channel.category != None:
-            option = msg.channel.category.name + " - " + msg.channel.name
-        elif type.lower() == "channel":
-            option = msg.channel.name
-        elif type.lower() == "category":
-            option = msg.channel.category.name
-        else:
-            raise ValueError("")
-
-        conv = commands.RoleConverter()
-        found = False
-
-        # If found it
-        # The role already exists
-        try:
-            r = await conv.convert(ctx, option)
-            found = True
-        except commands.RoleNotFound: 
-            pass
-        
-        if found:
-            embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
-            description= f"O cargo <@&{r.id}> já está no servidor, não precisa criar de novo!🍻",
-            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-            fields=[
-                ("Como pegar?", f"Apenas digite '.get' e ele será adicionado na sua conta", False)
-            ],
-            img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
-
-            await msg.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
-
-        else:
-            new_role = await guild.create_role(name=option, mentionable=True)
-
-            embedmsg = embed.createEmbed(title="Novo Cargo!", 
-                description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
-                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-                fields=[
-                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get {new_role.name} e ele será adicionado na sua conta", False)
-                ],
-                img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
-
-            await msg.channel.send(embed=embedmsg)
-
-
-    @linked_role.error
-    async def linked_role_error(self, ctx, error):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
-
-        if isinstance(error, CheckFailure):
-            await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after= self.delete_system_message)
-        elif isinstance(error, ValueError):
-            await ctx.send("**Erro:** Opção inválida! Tente 'Channel' ou 'Category'")
         else:
             await ctx.send(error, delete_after = self.delete_system_message)
 

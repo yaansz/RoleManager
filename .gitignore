@@ -128,3 +128,6 @@ dmypy.json
 
 # LOG
 *.log
+
+# vscode file :P
+.vscode/
