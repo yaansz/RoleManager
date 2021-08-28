@@ -153,8 +153,6 @@ class RoleManager(commands.Cog):
 
             await msg.channel.send(embed=embedmsg)
 
-
-
         return
 
 
@@ -164,10 +162,14 @@ class RoleManager(commands.Cog):
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after = self.delete_system_message)
         else:
+            self.log.error(f"{error} - creation of a new role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
 
 
     async def role_exists(self, ctx, role_name):
+        """
+            Method to check if a role exists in the current context, return a status and the role, if it exists.
+        """
         conv = commands.RoleConverter()
 
         # If found it
@@ -183,7 +185,7 @@ class RoleManager(commands.Cog):
 
     def linked_role(self, ctx, type: str):
         """
-            This function creates a role linked to a channel or a category, it's very useful to ping everyone who is interested to an specific chat, like a discipline or a very interesting topic
+            This function is used to return a name to a role linked to a channel or category
         """
         guild = ctx.guild
         author = ctx.author
@@ -219,8 +221,11 @@ class RoleManager(commands.Cog):
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode deletar um cargo!", delete_after = self.delete_system_message)
         else:
+            self.log.error(f"{error} - creation of a new role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
 
+
+    # TODO: THIS FUNCTION NEED TO BE REWRITED
 
     @commands.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
     @has_permissions(manage_roles = True, manage_channels = True)
