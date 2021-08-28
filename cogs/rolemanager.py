@@ -229,8 +229,37 @@ class RoleManager(commands.Cog):
             await ctx.send(error, delete_after = self.delete_system_message)
 
     
-    # AAAAAAAAAAAAAAAAAAAAAAAAAAAAA I'll need to split everything in one arg
-    # async def permission(self, ctx, role: CtxRoleConverter, permission_to_change: str, status: bool)
+    async def _permission(self, ctx, role: CtxRoleConverter, mode: str, perm: str, can: bool):
+        
+        guild = ctx.guild
+        author = ctx.author
+        msg = ctx.message
+
+        overwrite = discord.PermissionOverwrite()
+
+        if perm == "read_messages":
+            overwrite.read_messages = can
+
+        category = ctx.channel.category
+
+        await category.set_permissions(role, overwrite = overwrite)
+        
+        self.log.debug( (f'Permission {perm} was changed to {can} in role {role.name} in current category').encode('ascii', 'ignore').decode('ascii') )
+
+        fb = 'Permitido' if can else 'Proibido'
+
+        embedmsg = embed.createEmbed(title="Permissão alterada!", 
+                description= f"O cargo <@&{role.id}> foi atualizado por <@{author.id}>",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                    (f"Permissão '{perm}'", f"Atualizada para {fb}", False)
+                ],
+                img="https://cdn.discordapp.com/emojis/765969524897218594.png?v=1")
+
+        await msg.channel.send(embed=embedmsg)
+
+
+        return
 
     @commands.command(pass_context=True)
     @has_permissions(manage_roles = True, manage_channels = True)
@@ -268,21 +297,8 @@ class RoleManager(commands.Cog):
 
         status, role = await self.role_exists(ctx, role_name)
 
-        overwrite = discord.PermissionOverwrite()
+        await self._permission(ctx, role, mode, perm, can)
 
-        print(f"role: {role.name} : mode: {mode} : perm: {perm} : can: {can}")
-
-        if perm == "read_messages":
-            overwrite.read_messages = can
-
-        category = ctx.channel.category
-
-
-        await category.set_permissions(role, overwrite = overwrite)
-        
-        print(f'Change permission {perm} in current category to role {role.name} to {can}')
-
-        return
 
     # TODO: THIS FUNCTION NEED TO BE REWRITED
 
