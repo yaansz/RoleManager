@@ -97,9 +97,9 @@ if __name__ == "__main__":
     ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/.env")
     # LOG
     logger.init_log()
+
     logging.getLogger("discord").setLevel(logging.WARNING)
     logging.debug("Removed Discord.py logs")
-    
     
     bot = Bot()
     bot.run(ENV['DISCORD_RM_TOKEN'])

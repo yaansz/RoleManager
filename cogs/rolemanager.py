@@ -31,6 +31,10 @@ class RoleManager(commands.Cog):
         with open(os.path.dirname(os.path.abspath(__file__)) + '/../database/utils.json', 'r') as f:
             info = json.load(f)
 
+        # Just to log everything :D
+        self.log = logging.getLogger(__name__)
+
+        # TODO: Loading things :P (I want to put it in a parent class, but i'm not sure at this moment)
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
 
@@ -52,7 +56,6 @@ class RoleManager(commands.Cog):
             info = self.guild_preferences_db.find_one({"_id": guild.id})
             
             # Nome criado sempre que um chat é linkado a uma categoria!
-
             if before.category != None:
                 role_name = before.category.name + " - " + before.name
             else:
@@ -60,7 +63,7 @@ class RoleManager(commands.Cog):
 
             # Categoria que devo deletar o cargo
             if after.category.id == info['archives']:
-
+                
                 for r in guild.roles:
                     if r.name == role_name:
                         await r.delete()
@@ -73,6 +76,8 @@ class RoleManager(commands.Cog):
 
                         # Send that shit
                         await after.send(embed=embedmsg)
+                        self.log.debug(f"Role {role_name} deleted (Channel moved to archives)!")
+
                         return
 
 
@@ -83,10 +88,9 @@ class RoleManager(commands.Cog):
 
         if channel.type.name.lower() not in target_type_channels:
             return
-
-
-        if channel.type.name.lower() == "text" and channel.category != None:
+        elif channel.type.name.lower() == "text" and channel.category != None:
             option = channel.category.name + " - " + channel.name
+        # I don't know why i did that shit, but i won't change
         elif channel.type.name.lower() == "text":
             option = channel.name
         else:
@@ -95,9 +99,11 @@ class RoleManager(commands.Cog):
         for r in channel.guild.roles:
             if r.name == option:
                 role = r
+                
                 await role.delete()
-                break
-                 
+                self.log.debug(f"Role '{option}' deleted because linked channel was deleted")
+
+                break 
         return
 
     @commands.command(aliases=['criar'], pass_context=True)
