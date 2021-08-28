@@ -109,9 +109,11 @@ class RoleManager(commands.Cog):
 
     @commands.command(aliases=['criar'], pass_context=True)
     @has_permissions(manage_roles = True)
-    async def create(self, ctx, *, args: str):
+    async def create(self, ctx, *, args: str = "channel"):
         """Create a new role with the given name
         """
+
+        self.log.debug(f"create command args: {args}")
 
         # Deleting the message in n seconds after it was sent
         await ctx.message.delete(delay = self.delete_user_message)
