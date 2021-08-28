@@ -44,12 +44,16 @@ class Bot(commands.Bot):
                         intents=intents)
         self.log.debug("Bot basic setup initialized")
 
-
         # Extensions
         with open(os.path.dirname(os.path.abspath(__file__))  + '/database/utils.json', 'r') as f:
             extensions = json.load(f)["INITIAL_EXTENSIONS"]
         self.log.debug("Identified Extensions")
+        
+        self.load_extensions(extensions)
+        self.log.debug("All Identified extensions have been loaded")
 
+
+    def load_extensions(self, extensions):
         for extension in extensions:
             try:
                 self.load_extension(extension)
@@ -61,9 +65,8 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         self.log.info(f'Logged in as {bot.user} (ID: {bot.user.id})')
-
-        # Starting the loop
         self.update_status.start()
+        self.log.debug("Success to start the bot status update")
 
 
     @tasks.loop(seconds=10)
