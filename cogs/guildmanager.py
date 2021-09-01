@@ -59,7 +59,8 @@ class GuildManager(commands.Cog):
 
         elif msg.content.startswith(self.guild_preferences_db.find_one({"_id": msg.guild.id})['prefix']):
             
-            keep = ['init_role_react']
+            # TODO: Gambiarra ok?
+            keep = ['init']
             
             if keep[0] in msg.content:
                 return 

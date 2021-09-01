@@ -17,6 +17,8 @@ from utils.colors import *
 import os
 import logging
 
+from typing import Union
+
 # ENV
 from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
@@ -48,26 +50,60 @@ class Forms(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        
+        if payload.event_type != "REACTION_ADD":
+            return
+        
         guild_id = payload.guild_id
         channel_id = payload.channel_id
         message_id = payload.message_id
 
+        guild = self.client.get_guild(payload.guild_id)
+        author = guild.get_member(payload.user_id)
+
+        if author.bot:
+            return
+
         listeners = self.reaction_db.find_one({"_id" : guild_id})["listeners"]
+  
+        listener = next(filter(lambda listener: listener['ch_id'] == channel_id and listener['msg_id'] == message_id, listeners), None)
 
-        print(f"PAYLOAD INFO: {payload.event_type} : USER ID: {payload.user_id} : Emoji ID: {payload.emoji.id}")
-
-        if channel_id in [l["ch_id"] for l in listeners] and message_id in [l["msg_id"] for l in listeners]:
-            print("Achei otario!")
+        if listener is None:
+            return
         else:
-            print("Ahchei n foi mal :(")
+            emoji = payload.emoji
+
+
+            if emoji.is_custom_emoji():
+                send = emoji.id
+            else:
+                send = emoji.name
+
+
+            reacts = listener["reactions"]
+
+            print(reacts)
+
+            react = next(filter(lambda react: react['emoji'] == send, reacts), None)
+
+            if react is not None:
+                guild = self.client.get_guild(payload.guild_id)
+                
+                role = guild.get_role(react['role'])
+
+                await author.add_roles(role)
+
+
+
 
     @commands.command()
-    async def add_reactions(self, ctx, emoji: discord.PartialEmoji, role: discord.Role):
+    async def addr(self, ctx, emoji: Union[discord.PartialEmoji, str], role: discord.Role):
         """
         This function will add a reaction to a Role Emoji Manager (Message) that you replied to.
 
         It's like say that the emoji (:happy) is (@happy) ok?
         """
+        # TODO: check  if it exists
         message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
 
         guild_id = message.guild.id
@@ -75,18 +111,56 @@ class Forms(commands.Cog):
         message_id = message.id
 
         # TODO: MELHORA ESSA QUERRY AI PO
-        listeners = self.reaction_db.find_one({"_id" : guild_id})["listeners"]
+        listeners = self.reaction_db.find_one({"_id" : guild_id})["listeners"]    
+        listener = next(filter(lambda listener: listener['ch_id'] == channel_id and listener['msg_id'] == message_id, listeners), None)
+        
+        if listener is None:
+            embedmsg = embed.createEmbed(title="ERRO!", 
+            description= f"A mensagem selecionada não foi definida para pegar cargos",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+                ("Para funcionar", f".init emoji-role", False)
+            ],
+            img="https://cdn.discordapp.com/emojis/838992894291345440.png?v=1")
 
-        if channel_id in [l["ch_id"] for l in listeners] and message_id in [l["msg_id"] for l in listeners]:
-            self.reaction_db.update({'_id': guild_id}, {'$push': {'listeners': [{"emoji" : emoji.id, "role" : role.id}]}})
-
+            await message.reply(embed=embedmsg, delete_after= self.delete_system_message)
+        
         else:
-            print("Ahchei n foi mal :(")
+            if type(emoji) is not str:
+                processed_emoji = emoji
+                send = emoji.id
+            else:
+                processed_emoji = emoji
+                send = emoji
+            
+            # Try it
+            try:
+                await message.add_reaction(emoji)
+            except Exception as e:
+                embedmsg = embed.createEmbed(title="ERRO!", 
+                description= f"O bot não tem acesso ao emoji, por favor, tente utilizar um unicode ou nativo do servidor.",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                ],
+                img="https://cdn.discordapp.com/emojis/838992894291345440.png?v=1")
 
-        print(message.content)
+                await message.reply(embed=embedmsg, delete_after= self.delete_system_message)
+            
+            listener["reactions"].append({"emoji" : send, "role" : role.id})
+            self.reaction_db.update({'_id': guild_id}, {'$set': {'listeners': listeners}})
 
-    @commands.command()
-    async def init_role_react(self, ctx):
+            
+            # embedmsg = embed.createEmbed(title="Adicionado com sucesso!", 
+            # description= f"Agora a reação {emoji} foi definida para o cargo <@&{role.id}>",
+            # color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            # fields=[
+            # ],
+            # img="https://cdn.discordapp.com/emojis/838992894291345440.png?v=1")
+
+
+
+
+    def init_role_react(self, ctx):
         guild_id = ctx.guild.id
         ch_id = ctx.channel.id
         msg_id = ctx.message.id 
@@ -94,12 +168,18 @@ class Forms(commands.Cog):
         init = {
             "ch_id" : ch_id,
             "msg_id" : msg_id,
-            "reacts" : []
+            "reactions" : []
         }
 
         self.log.debug("Update!")
 
         self.reaction_db.update({'_id': guild_id}, {'$push': {'listeners': init}})
+
+
+    @commands.command()
+    async def init(self, ctx, *, args: str):
+        if args == 'emoji-role':
+            self.init_role_react(ctx)
 
 # Setup
 def setup(client):
