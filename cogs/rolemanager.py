@@ -225,7 +225,7 @@ class RoleManager(commands.Cog):
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode deletar um cargo!", delete_after = self.delete_system_message)
         else:
-            self.log.error(f"{error} - creation of a new role failed")
+            self.log.error(f"{error} - delete role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
 
     
@@ -343,35 +343,6 @@ class RoleManager(commands.Cog):
         status, role = await self.role_exists(ctx, role_name)
 
         await self._permission(ctx, role, mode, perm, can)
-
-
-    # TODO: THIS FUNCTION NEED TO BE REWRITED
-
-    @commands.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
-    @has_permissions(manage_roles = True, manage_channels = True)
-    async def canread(self, ctx, role: discord.Role, canRead: bool, type: str = "channel"):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
-
-        if type == "category":
-            category = ctx.channel.category
-
-            if category != None:
-                await category.set_permissions(role, view_channel = canRead)
-                await ctx.send("Permissão alterada!", delete_after = self.delete_system_message)
-        elif type == "channel":
-
-            await ctx.channel.set_permissions(role, view_channel = canRead)
-            await ctx.send("Permissão alterada!", delete_after = self.delete_system_message)
-
-
-    @canread.error
-    async def canread_error(self, ctx, error):
-        
-        if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-            await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"', 
-                delete_after = self.delete_system_message)
-
 
 
 # Setup
