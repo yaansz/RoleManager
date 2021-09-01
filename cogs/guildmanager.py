@@ -41,19 +41,29 @@ class GuildManager(commands.Cog):
         
         self.db_client = MongoClient(ENV['MONGODB'])
         self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
-    
+        self.reaction_db = self.db_client[info['mongo']['database']][info['mongo']['reaction']]
+
+
     @commands.Cog.listener()
     async def on_message(self, msg):
         
         if msg.content == "reset rolemanager":
             try:
                 self.guild_preferences_db.delete_one({"_id": msg.guild.id})
+                self.reaction_db.delete_one({"_id": msg.guild.id})
+                
             except:
                 pass
             await self.on_guild_join(msg.guild)
             await msg.reply("Preferências do bot foram restauradas aos valores padrões!")
 
         elif msg.content.startswith(self.guild_preferences_db.find_one({"_id": msg.guild.id})['prefix']):
+            
+            keep = ['init_role_react']
+            
+            if keep[0] in msg.content:
+                return 
+
             await msg.delete(delay = self.delete_user_message)       
 
 
@@ -67,10 +77,15 @@ class GuildManager(commands.Cog):
             "archives": None
         }
 
+        react_info = {
+            "_id": guild.id,
+            "listeners": []
+        }
+
         self.log.info( f"New Guild: {info}")
 
         g_id = self.guild_preferences_db.insert_one(info).inserted_id
-
+        g_id = self.reaction_db.insert_one(react_info).inserted_id
 
         return
 
@@ -82,6 +97,7 @@ class GuildManager(commands.Cog):
         self.log.info( f"Guild {guild.name} : {guild.id} is no longer available.")
 
         self.guild_preferences_db.delete_one({"_id": guild.id})
+        self.reaction_db.delete_one({"_id": guild.id})
 
         return
 
