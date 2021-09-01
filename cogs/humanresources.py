@@ -35,7 +35,7 @@ class HumanResources(commands.Cog):
     # Union[str, discord.Role]
 
     @commands.command(aliases=['pegar', 'add', 'add_roles'], pass_context=True)
-    async def get(self, ctx, role: str = "channel"):
+    async def get(self, ctx, *, role: str = "channel"):
         
         await ctx.message.delete(delay = self.delete_user_message)
         
@@ -46,7 +46,8 @@ class HumanResources(commands.Cog):
 
         # Just a temp
         role_str = role
-
+        
+        # TODO: I think i can put this try / catch in other part of the code or just remove that shit
         try:
             role = await converters.CtxRoleConverter().convert(ctx, role_str)
         except commands.RoleNotFound:
@@ -111,7 +112,7 @@ class HumanResources(commands.Cog):
 
     
     @commands.command(aliases=['remover'], pass_context=True)
-    async def remove(self, ctx, role: str = "channel"):
+    async def remove(self, ctx, *, role: str = "channel"):
         
         await ctx.message.delete(delay = self.delete_user_message)
         
@@ -122,6 +123,7 @@ class HumanResources(commands.Cog):
 
         role_str = role
 
+        # TODO: I think i can put this try / catch in other part of the code or just remove that shit
         try:
             role = await converters.CtxRoleConverter().convert(ctx, role_str)
         except commands.RoleNotFound:
