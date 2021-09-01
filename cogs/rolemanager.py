@@ -235,7 +235,8 @@ class RoleManager(commands.Cog):
         author = ctx.author
         msg = ctx.message
 
-
+        # TODO: i don't know how to handle with every permission
+        # i think i need to put it in a class attribute or something
         channel_permissions = [
             "add_reactions",
             "administrator",
