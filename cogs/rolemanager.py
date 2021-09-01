@@ -235,11 +235,58 @@ class RoleManager(commands.Cog):
         author = ctx.author
         msg = ctx.message
 
+
+        channel_permissions = [
+            "add_reactions",
+            "administrator",
+            "attach_files",
+            "ban_members",
+            "change_nickname",
+            "connect",
+            "create_instant_invite",
+            "deafen_members",
+            "embed_links",
+            "external_emojis",
+            "kick_members",
+            "manage_channels",
+            "manage_emojis",
+            "manage_guild",
+            "manage_messages",
+            "manage_nicknames",
+            "manage_permissions",
+            "manage_roles",
+            "manage_webhooks",
+            "mention_everyone",
+            "move_members",
+            "mute_members",
+            "priority_speaker",
+            "read_message_history",
+            "read_messages",
+            "request_to_speak",
+            "send_messages",
+            "send_tts_messages",
+            "speak",
+            "stream",
+            "use_external_emojis",
+            "use_slash_commands",
+            "use_voice_activation",
+            "value",
+            "view_audit_log",
+            "view_channel",
+            "view_guild_insights"
+        ]
+
+
         overwrite = discord.PermissionOverwrite()
 
-        if perm == "read_messages":
-            overwrite.read_messages = can
-
+        # Fundamental
+        #  x.attr_name = s 
+        # setattr(x, 'attr_name', s)
+        if perm not in channel_permissions:
+            self.log.debug("Permission not found!")
+            return
+        
+        setattr(overwrite, perm, can)
         category = ctx.channel.category
 
         await category.set_permissions(role, overwrite = overwrite)
@@ -274,26 +321,18 @@ class RoleManager(commands.Cog):
         bool -> bool
 
         """
-
-        self.log.debug(f"Permission debug: {args}".encode('ascii', 'ignore').decode('ascii'))
-
         splitted_args = args.split(' ')
 
         if len(args) < 4:
             # Just for now
-            self.log.debug("Missing args")
+            self.log.debug("[.permission] Missing args")
             return;
-
-        
-        print(splitted_args)
 
         can = str2bool(splitted_args[-1])
         perm = splitted_args[-2]
         mode = splitted_args[-3]
 
         role_name = ' '.join(splitted_args[:-3])
-
-        print(role_name)
 
         status, role = await self.role_exists(ctx, role_name)
 
