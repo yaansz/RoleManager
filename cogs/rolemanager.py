@@ -2,6 +2,10 @@ import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure
 
+from utils.converters import CtxRoleConverter
+from utils.utils import str2bool
+
+
 import random
 import json
 
@@ -13,6 +17,7 @@ import os
 #DB
 from pymongo import MongoClient
 
+import logging
 
 # ENV
 from dotenv import dotenv_values
@@ -31,6 +36,10 @@ class RoleManager(commands.Cog):
         with open(os.path.dirname(os.path.abspath(__file__)) + '/../database/utils.json', 'r') as f:
             info = json.load(f)
 
+        # Just to log everything :D
+        self.log = logging.getLogger(__name__)
+
+        # TODO: Loading things :P (I want to put it in a parent class, but i'm not sure at this moment)
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
 
@@ -52,7 +61,6 @@ class RoleManager(commands.Cog):
             info = self.guild_preferences_db.find_one({"_id": guild.id})
             
             # Nome criado sempre que um chat é linkado a uma categoria!
-
             if before.category != None:
                 role_name = before.category.name + " - " + before.name
             else:
@@ -60,7 +68,7 @@ class RoleManager(commands.Cog):
 
             # Categoria que devo deletar o cargo
             if after.category.id == info['archives']:
-
+                
                 for r in guild.roles:
                     if r.name == role_name:
                         await r.delete()
@@ -73,6 +81,8 @@ class RoleManager(commands.Cog):
 
                         # Send that shit
                         await after.send(embed=embedmsg)
+                        self.log.debug(f"Role {role_name} deleted (Channel moved to archives)!")
+
                         return
 
 
@@ -83,10 +93,9 @@ class RoleManager(commands.Cog):
 
         if channel.type.name.lower() not in target_type_channels:
             return
-
-
-        if channel.type.name.lower() == "text" and channel.category != None:
+        elif channel.type.name.lower() == "text" and channel.category != None:
             option = channel.category.name + " - " + channel.name
+        # I don't know why i did that shit, but i won't change
         elif channel.type.name.lower() == "text":
             option = channel.name
         else:
@@ -95,52 +104,107 @@ class RoleManager(commands.Cog):
         for r in channel.guild.roles:
             if r.name == option:
                 role = r
+                
                 await role.delete()
-                break
-                 
+                self.log.debug(f"Role '{option}' deleted because linked channel was deleted")
+
+                break 
         return
 
     @commands.command(aliases=['criar'], pass_context=True)
     @has_permissions(manage_roles = True)
-    async def create(self, ctx, *, args: str):
+    async def create(self, ctx, *, args: str = "channel"):
         """Create a new role with the given name
         """
 
-        # Deleting the message in n seconds after it was sent
-        await ctx.message.delete(delay = self.delete_user_message)
+        linked_keys = ["channel", "category"]
+
+        role_name = self.linked_role(ctx, args) if args in linked_keys else args
+    
 
         # Defining useful variables
         guild = ctx.guild
         author = ctx.author
         msg = ctx.message
 
-        # New Role Created!
-        result = await guild.create_role(name=args, mentionable=True)
+        role_exists, role = await self.role_exists(ctx, role_name)
 
-        # Embed Message
-        embedmsg = embed.createEmbed(title="Novo Cargo!", 
-            description= f"O cargo <@&{result.id}> foi criado por <@{author.id}>",
+        if role_exists:
+            embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
+            description= f"O cargo <@&{role.id}> já está no servidor, não precisa criar de novo!🍻",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
-                ("Como pegar?", f"Apenas digite .get <@&{result.id}> e ele será adicionado na sua conta", False)
+                ("Como pegar?", f"Apenas digite '.get' e ele será adicionado na sua conta", False)
             ],
-            img="https://cdn.discordapp.com/emojis/862024241951145984.gif?v=1")
+            img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
 
-        # Send that shit
-        await msg.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
-        
+            await msg.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+
+        else:
+            # New Role Created!
+            new_role = await guild.create_role(name=role_name, mentionable=True)
+            self.log.info( (f"New role '{new_role.name}' created in guild {guild.name} : {guild.id}").encode('ascii', 'ignore').decode('ascii') )
+
+
+            # TODO: Especificar a mensagem de acordo com o cargo que foi criado!
+            embedmsg = embed.createEmbed(title="Novo Cargo!", 
+                description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get {new_role.name} e ele será adicionado na sua conta", False)
+                ],
+                img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
+
+            await msg.channel.send(embed=embedmsg)
+
         return
 
 
     @create.error
     async def create_error(self, ctx, error):
         
-        await ctx.message.delete(delay=2)
-
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after = self.delete_system_message)
         else:
+            self.log.error(f"{error} - creation of a new role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
+
+    # TODO: Parent class too
+    async def role_exists(self, ctx, role_name):
+        """
+            Method to check if a role exists in the current context, return a status and the role, if it exists.
+        """
+        conv = commands.RoleConverter()
+
+        # If found it
+        # The role already exists
+        try:
+            r = await conv.convert(ctx, role_name)   
+            return True, r
+
+        except commands.RoleNotFound: 
+            return False, None
+        
+        
+    # TODO: Put it in a parent class
+    def linked_role(self, ctx, type: str):
+        """
+            This function is used to return a name to a role linked to a channel or category
+        """
+        guild = ctx.guild
+        author = ctx.author
+        msg = ctx.message
+        
+        if type.lower() == "channel" and msg.channel.category != None:
+            option = msg.channel.category.name + " - " + msg.channel.name
+        elif type.lower() == "channel":
+            option = msg.channel.name
+        elif type.lower() == "category":
+            option = msg.channel.category.name
+        else:
+            raise ValueError("")
+
+        return option;
 
 
     @commands.command(aliases=['deletar'], pass_context=True)
@@ -161,105 +225,125 @@ class RoleManager(commands.Cog):
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode deletar um cargo!", delete_after = self.delete_system_message)
         else:
+            self.log.error(f"{error} - delete role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
 
-
-    @commands.command(aliases=['linked'], pass_context=True)
-    @has_permissions(manage_roles = True, manage_channels = True)
-    async def linked_role(self, ctx, type: str = "channel"):
-        """
-            This function creates a role linked to a channel or a category, it's very useful to ping everyone who is interested to an specific chat, like a discipline or a very interesting topic
-        """
-
-        await ctx.message.delete(delay = self.delete_user_message)
-
+    
+    async def _permission(self, ctx, role: CtxRoleConverter, mode: str, perm: str, can: bool):
+        
         guild = ctx.guild
         author = ctx.author
         msg = ctx.message
+
+        # TODO: i don't know how to handle with every permission
+        # i think i need to put it in a class attribute or something
+        channel_permissions = [
+            "add_reactions",
+            "administrator",
+            "attach_files",
+            "ban_members",
+            "change_nickname",
+            "connect",
+            "create_instant_invite",
+            "deafen_members",
+            "embed_links",
+            "external_emojis",
+            "kick_members",
+            "manage_channels",
+            "manage_emojis",
+            "manage_guild",
+            "manage_messages",
+            "manage_nicknames",
+            "manage_permissions",
+            "manage_roles",
+            "manage_webhooks",
+            "mention_everyone",
+            "move_members",
+            "mute_members",
+            "priority_speaker",
+            "read_message_history",
+            "read_messages",
+            "request_to_speak",
+            "send_messages",
+            "send_tts_messages",
+            "speak",
+            "stream",
+            "use_external_emojis",
+            "use_slash_commands",
+            "use_voice_activation",
+            "value",
+            "view_audit_log",
+            "view_channel",
+            "view_guild_insights"
+        ]
+
+        overwrite = discord.PermissionOverwrite()
+
+        # Fundamental
+        #  x.attr_name = s 
+        # setattr(x, 'attr_name', s)
+        if perm not in channel_permissions:
+            self.log.debug( f"[.permission] Permission {perm} not found!")
+            return
         
-        if type.lower() == "channel" and msg.channel.category != None:
-            option = msg.channel.category.name + " - " + msg.channel.name
-        elif type.lower() == "channel":
-            option = msg.channel.name
-        elif type.lower() == "category":
-            option = msg.channel.category.name
+        setattr(overwrite, perm, can)
+ 
+        if mode == 'category':
+            category = ctx.channel.category
+            await category.set_permissions(role, overwrite = overwrite)
+        elif mode == 'channel':
+            channel = ctx.channel
+            await channel.set_permissions(role, overwrite = overwrite)
         else:
-            raise ValueError("")
-
-        conv = commands.RoleConverter()
-        found = False
-
-        # If found it
-        # The role already exists
-        try:
-            r = await conv.convert(ctx, option)
-            found = True
-        except commands.RoleNotFound: 
-            pass
+            # TODO: N ta funcionando
+            await role.edit(permission = overwrite)
         
-        if found:
-            embedmsg = embed.createEmbed(title="CARGO JÁ EXISTE!", 
-            description= f"O cargo <@&{r.id}> já está no servidor, não precisa criar de novo!🍻",
-            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-            fields=[
-                ("Como pegar?", f"Apenas digite '.get' e ele será adicionado na sua conta", False)
-            ],
-            img="https://cdn.discordapp.com/emojis/814010519022600192.png?v=1")
+        self.log.debug( (f'Permission {perm} was changed to {can} in role {role.name} in current category').encode('ascii', 'ignore').decode('ascii') )
 
-            await msg.channel.send(embed=embedmsg, delete_after= self.delete_system_message)
+        fb = 'Permitido' if can else 'Proibido'
 
-        else:
-            new_role = await guild.create_role(name=option, mentionable=True)
-
-            embedmsg = embed.createEmbed(title="Novo Cargo!", 
-                description= f"O cargo <@&{new_role.id}> foi criado por <@{author.id}>",
+        embedmsg = embed.createEmbed(title="Permissão alterada!", 
+                description= f"O cargo <@&{role.id}> foi atualizado por <@{author.id}>",
                 color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
                 fields=[
-                    ("Como pegar?", f"Apenas digite .get no chat do cargo ou .get {new_role.name} e ele será adicionado na sua conta", False)
+                    (f"Permissão '{perm}'", f"Atualizada para {fb}", False)
                 ],
-                img="https://cdn.discordapp.com/emojis/859150737509580800.gif?v=1")
+                img="https://cdn.discordapp.com/emojis/765969524897218594.png?v=1")
 
-            await msg.channel.send(embed=embedmsg)
-
-
-    @linked_role.error
-    async def linked_role_error(self, ctx, error):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
-
-        if isinstance(error, CheckFailure):
-            await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after= self.delete_system_message)
-        elif isinstance(error, ValueError):
-            await ctx.send("**Erro:** Opção inválida! Tente 'Channel' ou 'Category'")
-        else:
-            await ctx.send(error, delete_after = self.delete_system_message)
+        await msg.channel.send(embed=embedmsg)
 
 
-    @commands.command(aliases=['canRead', 'read', 'ler'], pass_context=True)
+        return
+
+    @commands.command(pass_context=True)
     @has_permissions(manage_roles = True, manage_channels = True)
-    async def canread(self, ctx, role: discord.Role, canRead: bool, type: str = "channel"):
-        
-        await ctx.message.delete(delay = self.delete_user_message)
+    async def permission(self, ctx, *, args: str):
+        """
+        Arg List:
 
-        if type == "category":
-            category = ctx.channel.category
+        ctx  -> Discord Context
+        role -> CtxRoleConverter
+        mode -> channel, category or role
+        perm -> permission to change
+        bool -> bool
 
-            if category != None:
-                await category.set_permissions(role, view_channel = canRead)
-                await ctx.send("Permissão alterada!", delete_after = self.delete_system_message)
-        elif type == "channel":
+        """
+        splitted_args = args.split(' ')
 
-            await ctx.channel.set_permissions(role, view_channel = canRead)
-            await ctx.send("Permissão alterada!", delete_after = self.delete_system_message)
+        if len(args) < 4:
+            # Just for now
+            self.log.debug("[.permission] Missing args")
+            return;
 
+        can = str2bool(splitted_args[-1])
+        perm = splitted_args[-2]
+        mode = splitted_args[-3]
 
-    @canread.error
-    async def canread_error(self, ctx, error):
-        
-        if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-            await ctx.send('**Erro:** Formato inválido.\nDigite ".canread <cargo> <bool: pode> <bool: é canal>"', 
-                delete_after = self.delete_system_message)
+        role_name = ' '.join(splitted_args[:-3])
 
+        status, role = await self.role_exists(ctx, role_name)
+
+        await self._permission(ctx, role, mode, perm, can)
 
 
 # Setup

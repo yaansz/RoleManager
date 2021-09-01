@@ -35,7 +35,7 @@ class HumanResources(commands.Cog):
     # Union[str, discord.Role]
 
     @commands.command(aliases=['pegar', 'add', 'add_roles'], pass_context=True)
-    async def get(self, ctx, role: str = "channel"):
+    async def get(self, ctx, *, role: str = "channel"):
         
         await ctx.message.delete(delay = self.delete_user_message)
         
@@ -46,7 +46,8 @@ class HumanResources(commands.Cog):
 
         # Just a temp
         role_str = role
-
+        
+        # TODO: I think i can put this try / catch in other part of the code or just remove that shit
         try:
             role = await converters.CtxRoleConverter().convert(ctx, role_str)
         except commands.RoleNotFound:
@@ -111,7 +112,7 @@ class HumanResources(commands.Cog):
 
     
     @commands.command(aliases=['remover'], pass_context=True)
-    async def remove(self, ctx, role: str = "channel"):
+    async def remove(self, ctx, *, role: str = "channel"):
         
         await ctx.message.delete(delay = self.delete_user_message)
         
@@ -122,6 +123,7 @@ class HumanResources(commands.Cog):
 
         role_str = role
 
+        # TODO: I think i can put this try / catch in other part of the code or just remove that shit
         try:
             role = await converters.CtxRoleConverter().convert(ctx, role_str)
         except commands.RoleNotFound:
@@ -151,7 +153,7 @@ class HumanResources(commands.Cog):
                 color = rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
                 fields = [
                 ],
-                img="https://cdn.discordapp.com/emojis/853000725822308412.png?v=1", delete_after= self.delete_system_message)
+                img="https://cdn.discordapp.com/emojis/853000725822308412.png?v=1")
 
             await ctx.message.channel.send(embed=embedmsg, delete_after = self.delete_system_message)
 
@@ -173,7 +175,6 @@ class HumanResources(commands.Cog):
     @remove.error
     async def remove_error(self, ctx, error):
         
-        await ctx.message.delete(delay = self.delete_user_message)
 
         await ctx.send(error, delete_after= self.delete_system_message)
 

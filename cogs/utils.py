@@ -12,6 +12,9 @@ from utils.colors import *
 
 import os
 
+import logging
+
+
 # ENV
 from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
@@ -27,6 +30,8 @@ class Utils(commands.Cog):
         # Some good paramters like timer and other shits
         with open(os.path.dirname(os.path.abspath(__file__))  + '/../database/utils.json', 'r') as f:
             info = json.load(f)
+
+        self.log = logging.getLogger(__name__)
 
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
@@ -46,8 +51,11 @@ class Utils(commands.Cog):
 
         string = "Lista: "
         
+
         #fields = [("Lista: ", "⠀⠀", False)]
         fields = []
+
+        self.log.debug( (f"Guild {ctx.guild.name} : {ctx.guild.id} roles -> {ctx.guild.roles}").encode('ascii', 'ignore').decode('ascii') )
 
         for r in ctx.guild.roles:
             #list += "<@&{0.id}>".format(r) + "\n"
@@ -63,7 +71,7 @@ class Utils(commands.Cog):
         if fields == []:
             fields.append((string, lst, False))
 
-
+        
         fields.append(("Como pegar?", f"Apenas digite .get no chat do cargo ou .get <@ do cargo> e ele será adicionado na sua conta", False)
         )
 
@@ -79,10 +87,15 @@ class Utils(commands.Cog):
 
     @commands.command(aliases=['cor', 'setcolor'], pass_context=True)
     @has_permissions(manage_roles = True)
-    async def color(self, ctx, role: discord.Role, *, args: str):
+    async def color(self, ctx, args: str, *, role: str = "channel"):
 
-        await ctx.message.delete(delay= self.delete_user_message)
-    
+        linked_keys = ["channel", "category"]
+        role_name = linked_role(ctx, args) if role in linked_keys else role
+        role_exists, role = await self.role_exists(ctx, role_name)
+
+        if not role_exists:
+            await ctx.send("**Error:** Cargo não existe")
+        
         if is_bgcolor(args):
 
             args = args.lstrip('#')
@@ -118,21 +131,44 @@ class Utils(commands.Cog):
             await ctx.send(error, delete_after = self.delete_system_message)
     
 
-    @commands.command(pass_context=True)
-    async def changenickname(self, ctx, *, args: str):
-        """Create a new role with the given name
+    # TODO: Parent class too
+    def linked_role(self, ctx, type: str):
         """
-        await ctx.author.edit(nick=args)
-
-    @changenickname.error
-    async def changenickname_error(self, ctx, error):
+            This function is used to return a name to a role linked to a channel or category
+        """
+        guild = ctx.guild
+        author = ctx.author
+        msg = ctx.message
         
-        await ctx.message.delete(delay=2)
+        if type.lower() == "channel" and msg.channel.category != None:
+            option = msg.channel.category.name + " - " + msg.channel.name
+        elif type.lower() == "channel":
+            option = msg.channel.name
+        elif type.lower() == "category":
+            option = msg.channel.category.name
+        else:
+            raise ValueError("")
 
-        await ctx.send(error, delete_after = self.delete_system_message)
+        return option;
 
 
+    # TODO: Parent class too
+    async def role_exists(self, ctx, role_name):
+        """
+            Method to check if a role exists in the current context, return a status and the role, if it exists.
+        """
+        conv = commands.RoleConverter()
 
+        # If found it
+        # The role already exists
+        try:
+            r = await conv.convert(ctx, role_name)   
+            return True, r
+
+        except commands.RoleNotFound: 
+            return False, None
+
+    
 # Setup
 def setup(client):
     client.add_cog(Utils(client))

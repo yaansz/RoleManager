@@ -7,14 +7,16 @@
     "mongo" :
     {
         "database" : "role-manager",
-        "collection" : "guild-preferences"
+        "collection" : "guild-preferences",
+        "reaction" : "reaction-system"
     },
     "INITIAL_EXTENSIONS" : [
         "cogs.rolemanager",
         "cogs.humanresources",
         "cogs.utils",
         "cogs.guildmanager",
-        "cogs.loadmanager"
+        "cogs.loadmanager",
+        "cogs.forms"
     ]
     
 }

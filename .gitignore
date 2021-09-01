@@ -125,3 +125,9 @@ dmypy.json
 
 
 *.save
+
+# LOG
+*.log
+
+# vscode file :P
+.vscode/
