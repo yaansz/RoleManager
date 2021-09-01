@@ -47,15 +47,7 @@ class Forms(commands.Cog):
         self.reaction_db = self.db_client[info['mongo']['database']][info['mongo']['reaction']]
 
 
-    
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        """
-            This function checks if a reaction has been added, if its true the function 
-            will check if there's an emoji associated to an role in the message.  
-        """
-        if payload.event_type != "REACTION_ADD":
-            return
+    def get_role(self, payload):
         
         guild_id = payload.guild_id
         channel_id = payload.channel_id
@@ -65,7 +57,7 @@ class Forms(commands.Cog):
         author = guild.get_member(payload.user_id)
 
         if author.bot:
-            return
+            return None
 
         listeners = self.reaction_db.find_one({"_id" : guild_id})["listeners"]
         
@@ -73,7 +65,7 @@ class Forms(commands.Cog):
         listener = next(filter(lambda listener: listener['ch_id'] == channel_id and listener['msg_id'] == message_id, listeners), None)
 
         if listener is None:
-            return
+            return None
         else:
             emoji = payload.emoji
             
@@ -89,7 +81,40 @@ class Forms(commands.Cog):
 
             if react is not None:
                 role = guild.get_role(react['role'])
-                await author.add_roles(role)
+
+        return role
+
+    
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        """
+            This function checks if a reaction has been added, if its true the function 
+            will check if there's an emoji associated to an role in the message.  
+        """
+        if payload.event_type != "REACTION_ADD":
+            return
+        
+        guild = self.client.get_guild(payload.guild_id)
+        author = guild.get_member(payload.user_id)
+        role = self.get_role(payload)
+        
+        await author.add_roles(role)
+
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        """
+            This function checks if a reaction has been added, if its true the function 
+            will check if there's an emoji associated to an role in the message.  
+        """
+        if payload.event_type != "REACTION_REMOVE":
+            return
+        
+        guild = self.client.get_guild(payload.guild_id)
+        author = guild.get_member(payload.user_id)
+        role = self.get_role(payload)
+        
+        await author.remove_roles(role)
 
 
     @commands.command()
