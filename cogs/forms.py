@@ -50,7 +50,10 @@ class Forms(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        
+        """
+            This function checks if a reaction has been added, if its true the function 
+            will check if there's an emoji associated to an role in the message.  
+        """
         if payload.event_type != "REACTION_ADD":
             return
         
@@ -65,35 +68,28 @@ class Forms(commands.Cog):
             return
 
         listeners = self.reaction_db.find_one({"_id" : guild_id})["listeners"]
-  
+        
+        # check if is the case to get roles to someone
         listener = next(filter(lambda listener: listener['ch_id'] == channel_id and listener['msg_id'] == message_id, listeners), None)
 
         if listener is None:
             return
         else:
             emoji = payload.emoji
-
-
+            
+            # unicode or custom?
             if emoji.is_custom_emoji():
                 send = emoji.id
             else:
                 send = emoji.name
 
-
             reacts = listener["reactions"]
-
-            print(reacts)
-
+            # the emoji is associated to a role?
             react = next(filter(lambda react: react['emoji'] == send, reacts), None)
 
             if react is not None:
-                guild = self.client.get_guild(payload.guild_id)
-                
                 role = guild.get_role(react['role'])
-
                 await author.add_roles(role)
-
-
 
 
     @commands.command()
