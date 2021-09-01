@@ -276,20 +276,26 @@ class RoleManager(commands.Cog):
             "view_guild_insights"
         ]
 
-
         overwrite = discord.PermissionOverwrite()
 
         # Fundamental
         #  x.attr_name = s 
         # setattr(x, 'attr_name', s)
         if perm not in channel_permissions:
-            self.log.debug("Permission not found!")
+            self.log.debug( f"[.permission] Permission {perm} not found!")
             return
         
         setattr(overwrite, perm, can)
-        category = ctx.channel.category
-
-        await category.set_permissions(role, overwrite = overwrite)
+ 
+        if mode == 'category':
+            category = ctx.channel.category
+            await category.set_permissions(role, overwrite = overwrite)
+        elif mode == 'channel':
+            channel = ctx.channel
+            await channel.set_permissions(role, overwrite = overwrite)
+        else:
+            # TODO: N ta funcionando
+            await role.edit(permission = overwrite)
         
         self.log.debug( (f'Permission {perm} was changed to {can} in role {role.name} in current category').encode('ascii', 'ignore').decode('ascii') )
 
