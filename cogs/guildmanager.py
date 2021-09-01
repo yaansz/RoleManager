@@ -14,6 +14,8 @@ from utils.colors import *
 
 import os
 
+import logging
+
 # ENV
 from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
@@ -29,6 +31,9 @@ class GuildManager(commands.Cog):
         # Some good paramters like timer and other shits
         with open(os.path.dirname(os.path.abspath(__file__)) + '/../database/utils.json', 'r') as f:
             info = json.load(f)
+
+        # Just to log everything :D
+        self.log = logging.getLogger(__name__)
 
         self.delete_user_message = info['utils']['delete_user_message']
         self.delete_system_message = info['utils']['delete_system_message']
@@ -62,7 +67,10 @@ class GuildManager(commands.Cog):
             "archives": None
         }
 
+        self.log.info( f"New Guild: {info}")
+
         g_id = self.guild_preferences_db.insert_one(info).inserted_id
+
 
         return
 
@@ -70,6 +78,9 @@ class GuildManager(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         
+
+        self.log.info( f"Guild {guild.name} : {guild.id} is no longer available.")
+
         self.guild_preferences_db.delete_one({"_id": guild.id})
 
         return
@@ -81,7 +92,7 @@ class GuildManager(commands.Cog):
 
     @commands.command(pass_context=True)
     @has_permissions(administrator = True)
-    async def setprefix(self, ctx, prefix: str):
+    async def prefix(self, ctx, prefix: str):
         """Create a new role with the given name
         """
 
@@ -97,13 +108,14 @@ class GuildManager(commands.Cog):
 
         await ctx.send(embed=embedmsg)
 
+        self.log.info( f"Prefix of {ctx.guild.name} : {ctx.guild.id} was updated to {prefix}")
 
         return
 
     
     @commands.command(pass_context=True)
     @has_permissions(administrator = True)
-    async def setarchives(self, ctx):
+    async def archives(self, ctx):
         
         self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
         {'$set': {'archives': ctx.channel.category.id}})
@@ -125,8 +137,8 @@ class GuildManager(commands.Cog):
         return
     
 
-    @setarchives.error
-    @setprefix.error
+    @archives.error
+    @prefix.error
     async def guild_errors(self, ctx, error):
         
         if isinstance(error, CheckFailure):

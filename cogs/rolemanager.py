@@ -169,7 +169,7 @@ class RoleManager(commands.Cog):
             self.log.error(f"{error} - creation of a new role failed")
             await ctx.send(error, delete_after = self.delete_system_message)
 
-
+    # TODO: Parent class too
     async def role_exists(self, ctx, role_name):
         """
             Method to check if a role exists in the current context, return a status and the role, if it exists.
@@ -186,7 +186,7 @@ class RoleManager(commands.Cog):
             return False, None
         
         
-
+    # TODO: Put it in a parent class
     def linked_role(self, ctx, type: str):
         """
             This function is used to return a name to a role linked to a channel or category
