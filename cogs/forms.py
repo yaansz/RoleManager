@@ -186,6 +186,7 @@ class Forms(commands.Cog):
     @commands.command()
     async def remr(self, ctx, thing: Union[discord.PartialEmoji, str, discord.Role]):
         
+        # TODO: remr and addr are same in a lot of parts
         if ctx.message.reference is None:
             # TODO: EMBED
             await ctx.send("Você precisa estar respondendo uma mensagem para poder usar este comando", delete_after=self.delete_system_message)
