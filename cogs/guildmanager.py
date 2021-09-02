@@ -47,15 +47,23 @@ class GuildManager(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, msg):
         
-        if msg.content == "reset rolemanager":
+        hardreset = "--hard" in msg.content
+
+        feedback = "Preferências do bot foram restauradas aos valores padrões!"
+
+        if msg.content.startswith("reset rolemanager"):
             try:
                 self.guild_preferences_db.delete_one({"_id": msg.guild.id})
-                self.reaction_db.delete_one({"_id": msg.guild.id})
+
+                if hardreset:
+                    # TODO: Deletar todas as mensagens de reação no --hard
+                    self.reaction_db.delete_one({"_id": msg.guild.id})
+                    feedback += " Reações também foram deletadas"
                 
             except:
                 pass
-            await self.on_guild_join(msg.guild)
-            await msg.reply("Preferências do bot foram restauradas aos valores padrões!")
+            await self.on_guild_join(msg.guild, hardreset)
+            await msg.reply(feedback)
 
         elif msg.content.startswith(self.guild_preferences_db.find_one({"_id": msg.guild.id})['prefix']):
             
@@ -69,7 +77,7 @@ class GuildManager(commands.Cog):
 
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild, hard = True):
     
         info = {
             "_id": guild.id,
@@ -78,15 +86,17 @@ class GuildManager(commands.Cog):
             "archives": None
         }
 
-        react_info = {
-            "_id": guild.id,
-            "listeners": []
-        }
 
         self.log.info( f"New Guild: {info}")
 
         g_id = self.guild_preferences_db.insert_one(info).inserted_id
-        g_id = self.reaction_db.insert_one(react_info).inserted_id
+        
+        if hard:
+            react_info = {
+                "_id": guild.id,
+                "listeners": []
+            }
+            g_id = self.reaction_db.insert_one(react_info).inserted_id
 
         return
 
