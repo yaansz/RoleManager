@@ -1,0 +1,2 @@
+class NotReplyingError(Exception):
+   pass

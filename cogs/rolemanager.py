@@ -16,7 +16,6 @@ import os
 
 #DB
 from pymongo import MongoClient
-
 import logging
 
 # ENV

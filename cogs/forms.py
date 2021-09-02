@@ -3,9 +3,6 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, CheckFailure
 from discord.ext.commands import errors
 
-# Forms
-from discord.ext.forms import Form
-
 #DB
 from pymongo import MongoClient
 
@@ -13,15 +10,19 @@ import random
 import json
 import utils.embed as embed
 from utils.colors import *
+from utils.roleexceptions import NotReplyingError
 
 import os
 import logging
 
 from typing import Union
 
+
 # ENV
 from dotenv import dotenv_values
 ENV = dotenv_values(os.path.dirname(os.path.abspath(__file__)) + "/../.env")
+
+
 
 class Forms(commands.Cog):
     """
@@ -98,7 +99,8 @@ class Forms(commands.Cog):
         author = guild.get_member(payload.user_id)
         role = self.get_role(payload)
         
-        await author.add_roles(role)
+        if role is not None:
+            await author.add_roles(role)
 
 
     @commands.Cog.listener()
@@ -114,17 +116,24 @@ class Forms(commands.Cog):
         author = guild.get_member(payload.user_id)
         role = self.get_role(payload)
         
-        await author.remove_roles(role)
+        if role is not None:
+            await author.remove_roles(role)
+
 
 
     @commands.command()
-    async def addr(self, ctx, emoji: Union[discord.PartialEmoji, str], role: discord.Role):
+    async def addr(self, ctx, emoji: Union[discord.PartialEmoji, str], role: commands.RoleConverter):
         """
         This function will add a reaction to a Role Emoji Manager (Message) that you replied to.
 
-        It's like say that the emoji (:happy) is (@happy) ok?
+        It's like say that the emoji (:happy:) is (@happy) ok?
         """
-        # TODO: check  if it exists
+        
+        if ctx.message.reference is None:
+            # TODO: EMBED
+            await ctx.send("Você precisa estar respondendo uma mensagem para poder usar este comando", delete_after=self.delete_system_message)
+            return
+        
         message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
 
         guild_id = message.guild.id
@@ -137,7 +146,7 @@ class Forms(commands.Cog):
         
         if listener is None:
             embedmsg = embed.createEmbed(title="ERRO!", 
-            description= f"A mensagem selecionada não foi definida para pegar cargos",
+            description= f"A mensagem selecionada não foi definida para manipular cargos",
             color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
             fields=[
                 ("Para funcionar", f".init emoji-role", False)
@@ -156,6 +165,8 @@ class Forms(commands.Cog):
             
             # Try it
             try:
+
+                # IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 await message.add_reaction(emoji)
             except Exception as e:
                 embedmsg = embed.createEmbed(title="ERRO!", 
@@ -167,21 +178,86 @@ class Forms(commands.Cog):
 
                 await message.reply(embed=embedmsg, delete_after= self.delete_system_message)
             
+            # IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             listener["reactions"].append({"emoji" : send, "role" : role.id})
             self.reaction_db.update({'_id': guild_id}, {'$set': {'listeners': listeners}})
 
+
+    @commands.command()
+    async def remr(self, ctx, thing: Union[discord.PartialEmoji, str, discord.Role]):
+        
+        if ctx.message.reference is None:
+            # TODO: EMBED
+            await ctx.send("Você precisa estar respondendo uma mensagem para poder usar este comando", delete_after=self.delete_system_message)
+            return
+        
+        message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+
+        guild_id = message.guild.id
+        channel_id = message.channel.id
+        message_id = message.id
+
+        # TODO: MELHORA ESSA QUERRY AI PO
+        listeners = self.reaction_db.find_one({"_id" : guild_id})["listeners"]    
+        listener = next(filter(lambda listener: listener['ch_id'] == channel_id and listener['msg_id'] == message_id, listeners), None)
+        
+        if listener is None:
+            embedmsg = embed.createEmbed(title="ERRO!", 
+            description= f"A mensagem selecionada não foi definida para manipular cargos",
+            color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+            fields=[
+                ("Para funcionar", f".init emoji-role", False)
+            ],
+            img="https://cdn.discordapp.com/emojis/838992894291345440.png?v=1")
+
+            await message.reply(embed=embedmsg, delete_after= self.delete_system_message)
+        
+        else:
             
-            # embedmsg = embed.createEmbed(title="Adicionado com sucesso!", 
-            # description= f"Agora a reação {emoji} foi definida para o cargo <@&{role.id}>",
-            # color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
-            # fields=[
-            # ],
-            # img="https://cdn.discordapp.com/emojis/838992894291345440.png?v=1")
+            reactions = listener["reactions"]
+
+            if type(thing) is discord.Role:
+                filtered = next(filter(lambda react: react['role'] == thing.id, reactions), None)
+
+                if filtered is not None:
+                    to_remove = self.client.get_emoji(filtered['emoji'])
+
+            else:
+                if type(thing) is not str:
+                    option = thing.id
+                else:
+                    option = thing
+                to_remove = thing
+                
+                filtered = next(filter(lambda react: react['emoji'] == option, reactions), None)
+
+            print(reactions)
+            print(filtered)
+            
+            # Try it
+            try:
+
+                # IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                await message.clear_reaction(to_remove)
+            except Exception as e:
+                print(e)
+                pass
+            
+            # IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            listener["reactions"].remove(filtered)
+            self.reaction_db.update({'_id': guild_id}, {'$set': {'listeners': listeners}})
+
+        return
+
+    @remr.error
+    @addr.error
+    async def addrem_error(self, ctx, error):
+
+        self.log.error(f"{error}")
+        await ctx.send(error, delete_after = self.delete_system_message)
 
 
-
-
-    def init_role_react(self, ctx):
+    async def init_role_react(self, ctx):
         guild_id = ctx.guild.id
         ch_id = ctx.channel.id
         msg_id = ctx.message.id 
@@ -192,15 +268,23 @@ class Forms(commands.Cog):
             "reactions" : []
         }
 
-        self.log.debug("Update!")
-
         self.reaction_db.update({'_id': guild_id}, {'$push': {'listeners': init}})
+        self.log.debug("New Role Listener started")
+
+        embedmsg = embed.createEmbed(title="Mensagem para gerenciamento de cargos iniciada!", 
+                description= f"Para adicionar cargos basta responder a mensagem com .addr <emoji> <cargo>",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                ],
+                img="https://cdn.discordapp.com/emojis/838992894291345440.png?v=1")
+
+        await ctx.message.reply(embed=embedmsg, delete_after= self.delete_system_message)
 
 
     @commands.command()
     async def init(self, ctx, *, args: str):
         if args == 'emoji-role':
-            self.init_role_react(ctx)
+            await self.init_role_react(ctx)
 
 # Setup
 def setup(client):
