@@ -123,7 +123,7 @@ class Forms(commands.Cog):
 
     @commands.command()
     @has_permissions(administrator = True)
-    async def addr(self, ctx, emoji: Union[discord.PartialEmoji, str], role: commands.RoleConverter):
+    async def addr(self, ctx, emoji: Union[discord.PartialEmoji, str], *, role: commands.RoleConverter):
         """
         This function will add a reaction to a Role Emoji Manager (Message) that you replied to.
 
@@ -186,8 +186,10 @@ class Forms(commands.Cog):
 
     @commands.command()
     @has_permissions(administrator = True)
-    async def remr(self, ctx, thing: Union[discord.PartialEmoji, str, discord.Role]):
+    async def remr(self, ctx, *, thing: Union[discord.PartialEmoji, str, commands.RoleConverter]):
         
+        # TODO: RoleConverter needs to come from a string
+
         # TODO: remr and addr are same in a lot of parts
         if ctx.message.reference is None:
             # TODO: EMBED
