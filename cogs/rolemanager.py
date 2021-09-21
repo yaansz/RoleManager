@@ -362,14 +362,13 @@ class RoleManager(commands.Cog):
                 description= f"Verifique a lista de argumentos e permissões",
                 color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
                 fields=[
-                    (f"Argumentos", f"""ctx  -> Discord Context
-                                        role -> CtxRoleConverter
+                    (f"Argumentos", f"""role -> Role
                                         mode -> channel, category or role
                                         perm -> permission to change
                                         bool -> bool""", False),
                     (f"Permissões", "\n".join([item for item in self.channel_permissions]), False)
                 ],
-                img="https://cdn.discordapp.com/emojis/765969524897218594.png?v=1")
+                img="https://cdn.discordapp.com/emojis/767241157003837460.png?v=1")
 
         await ctx.send(embed=embedmsg)
 
