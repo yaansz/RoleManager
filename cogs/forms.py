@@ -130,6 +130,8 @@ class Forms(commands.Cog):
         It's like say that the emoji (:happy:) is (@happy) ok?
         """
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         if ctx.message.reference is None:
             # TODO: EMBED
             await ctx.send("Você precisa estar respondendo uma mensagem para poder usar este comando", delete_after=self.delete_system_message)
@@ -188,6 +190,8 @@ class Forms(commands.Cog):
     @has_permissions(administrator = True)
     async def remr(self, ctx, *, thing: Union[discord.PartialEmoji, str, commands.RoleConverter]):
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         # TODO: RoleConverter needs to come from a string
 
         # TODO: remr and addr are same in a lot of parts
@@ -254,12 +258,15 @@ class Forms(commands.Cog):
     @remr.error
     @addr.error
     async def addrem_error(self, ctx, error):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
 
         self.log.error(f"{error}")
         await ctx.send(error, delete_after = self.delete_system_message)
 
 
     async def init_role_react(self, ctx):
+        
         guild_id = ctx.guild.id
         ch_id = ctx.channel.id
         msg_id = ctx.message.id 
@@ -286,6 +293,7 @@ class Forms(commands.Cog):
     @commands.command()
     @has_permissions(administrator = True)
     async def init(self, ctx, *, args: str):
+        
         if args == 'emoji-role':
             await self.init_role_react(ctx)
 

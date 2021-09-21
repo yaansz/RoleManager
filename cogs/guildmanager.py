@@ -48,6 +48,8 @@ class GuildManager(commands.Cog):
     @has_permissions(administrator = True)
     async def reset(self, ctx, msg = ""):
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         if type(msg) is not str:
             msg = msg.content
         
@@ -79,16 +81,6 @@ class GuildManager(commands.Cog):
                 await self.reset(ctx, msg)
             else:
                 await ctx.reply("Você não tem permissão!", delete_after= self.delete_system_message)
-
-        elif msg.content.startswith(self.guild_preferences_db.find_one({"_id": msg.guild.id})['prefix']):
-            
-            # TODO: Gambiarra ok?
-            keep = ['init']
-            
-            if keep[0] in msg.content:
-                return 
-
-            await msg.delete(delay = self.delete_user_message)       
 
 
     @commands.Cog.listener()
@@ -136,7 +128,9 @@ class GuildManager(commands.Cog):
     @has_permissions(administrator = True)
     async def prefix(self, ctx, prefix: str):
         """Create a new role with the given name
-        """
+        """ 
+
+        await ctx.message.delete(delay = self.delete_user_message)
 
         self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
         {'$set': {'prefix': prefix}})
@@ -159,6 +153,8 @@ class GuildManager(commands.Cog):
     @has_permissions(administrator = True)
     async def archives(self, ctx):
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         self.guild_preferences_db.update_one({'_id': ctx.guild.id}, 
         {'$set': {'archives': ctx.channel.category.id}})
 
@@ -184,6 +180,8 @@ class GuildManager(commands.Cog):
     @reset.error
     async def guild_errors(self, ctx, error):
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         if isinstance(error, CheckFailure):
             
             embedmsg = embed.createEmbed(title="Você não pode executar esse comando!", 
@@ -217,6 +215,8 @@ class GuildManager(commands.Cog):
 
     @commands.command()
     async def preferences(self, ctx):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
 
         info = self.guild_preferences_db.find_one({"_id": ctx.guild.id})
 

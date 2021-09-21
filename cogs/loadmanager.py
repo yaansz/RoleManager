@@ -45,6 +45,8 @@ class LoadManager(commands.Cog):
     @commands.check(isOwner)
     async def load(self, ctx, extension: str):
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         self.client.load_extension(f"cogs.{extension}")
         
         embedmsg = embed.createEmbed(title="Extensão carregada com sucesso!", 
@@ -61,6 +63,8 @@ class LoadManager(commands.Cog):
     @commands.command()
     @commands.check(isOwner)
     async def unload(self, ctx, extension: str):
+
+        await ctx.message.delete(delay = self.delete_user_message)
         
         self.client.unload_extension(f"cogs.{extension}")
         
@@ -79,7 +83,9 @@ class LoadManager(commands.Cog):
     @commands.command()
     @commands.check(isOwner)
     async def reload(self, ctx, extension: str):
-           
+
+        await ctx.message.delete(delay = self.delete_user_message)
+
         self.client.reload_extension(f"cogs.{extension}")
         
         embedmsg = embed.createEmbed(title="Extensão recarregada com sucesso!", 
@@ -97,6 +103,8 @@ class LoadManager(commands.Cog):
     @commands.check(isOwner)
     async def reloadall(self, ctx):
         
+        await ctx.message.delete(delay = self.delete_user_message)
+
         with open(os.path.dirname(os.path.abspath(__file__))  + '/../database/utils.json', 'r') as f:
             extensions = json.load(f)["INITIAL_EXTENSIONS"]
 
@@ -126,6 +134,8 @@ class LoadManager(commands.Cog):
     @unload.error
     @reloadall.error
     async def owner_error(self, ctx, error):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
         
         if isinstance(error, CheckFailure):
             

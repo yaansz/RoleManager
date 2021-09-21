@@ -5,6 +5,7 @@ from discord.ext.commands import has_permissions, CheckFailure
 from utils.converters import CtxRoleConverter
 from utils.utils import str2bool
 
+from functools import reduce
 
 import random
 import json
@@ -44,6 +45,47 @@ class RoleManager(commands.Cog):
 
         self.db_client = MongoClient(ENV['MONGODB'])
         self.guild_preferences_db = self.db_client[info['mongo']['database']][info['mongo']['collection']]
+
+
+        self.channel_permissions = [
+            "add_reactions",
+            "administrator",
+            "attach_files",
+            "ban_members",
+            "change_nickname",
+            "connect",
+            "create_instant_invite",
+            "deafen_members",
+            "embed_links",
+            "external_emojis",
+            "kick_members",
+            "manage_channels",
+            "manage_emojis",
+            "manage_guild",
+            "manage_messages",
+            "manage_nicknames",
+            "manage_permissions",
+            "manage_roles",
+            "manage_webhooks",
+            "mention_everyone",
+            "move_members",
+            "mute_members",
+            "priority_speaker",
+            "read_message_history",
+            "read_messages",
+            "request_to_speak",
+            "send_messages",
+            "send_tts_messages",
+            "speak",
+            "stream",
+            "use_external_emojis",
+            "use_slash_commands",
+            "use_voice_activation",
+            "value",
+            "view_audit_log",
+            "view_channel",
+            "view_guild_insights"
+        ]
 
 
     @commands.Cog.listener()
@@ -116,6 +158,8 @@ class RoleManager(commands.Cog):
         """Create a new role with the given name
         """
 
+        await ctx.message.delete(delay = self.delete_user_message)
+
         linked_keys = ["channel", "category"]
 
         role_name = self.linked_role(ctx, args) if args in linked_keys else args
@@ -161,6 +205,8 @@ class RoleManager(commands.Cog):
 
     @create.error
     async def create_error(self, ctx, error):
+        
+        await ctx.message.delete(delay = self.delete_user_message)
         
         if isinstance(error, CheckFailure):
             await ctx.send("**Erro:** Você não pode criar um cargo!", delete_after = self.delete_system_message)
@@ -234,48 +280,7 @@ class RoleManager(commands.Cog):
         author = ctx.author
         msg = ctx.message
 
-        # TODO: i don't know how to handle with every permission
-        # i think i need to put it in a class attribute or something
-        channel_permissions = [
-            "add_reactions",
-            "administrator",
-            "attach_files",
-            "ban_members",
-            "change_nickname",
-            "connect",
-            "create_instant_invite",
-            "deafen_members",
-            "embed_links",
-            "external_emojis",
-            "kick_members",
-            "manage_channels",
-            "manage_emojis",
-            "manage_guild",
-            "manage_messages",
-            "manage_nicknames",
-            "manage_permissions",
-            "manage_roles",
-            "manage_webhooks",
-            "mention_everyone",
-            "move_members",
-            "mute_members",
-            "priority_speaker",
-            "read_message_history",
-            "read_messages",
-            "request_to_speak",
-            "send_messages",
-            "send_tts_messages",
-            "speak",
-            "stream",
-            "use_external_emojis",
-            "use_slash_commands",
-            "use_voice_activation",
-            "value",
-            "view_audit_log",
-            "view_channel",
-            "view_guild_insights"
-        ]
-
+    
         overwrite = discord.PermissionOverwrite()
 
         # Fundamental
@@ -316,7 +321,7 @@ class RoleManager(commands.Cog):
 
     @commands.command(pass_context=True)
     @has_permissions(manage_roles = True, manage_channels = True)
-    async def permission(self, ctx, *, args: str):
+    async def permission(self, ctx, *, args: str = ""):
         """
         Arg List:
 
@@ -327,11 +332,17 @@ class RoleManager(commands.Cog):
         bool -> bool
 
         """
+
+        await ctx.message.delete(delay = self.delete_user_message)
+
         splitted_args = args.split(' ')
 
-        if len(args) < 4:
+        if len(splitted_args) < 4 or args == "":
             # Just for now
             self.log.debug("[.permission] Missing args")
+
+            await self.permission_tutorial(ctx)
+
             return;
 
         can = str2bool(splitted_args[-1])
@@ -344,6 +355,23 @@ class RoleManager(commands.Cog):
 
         await self._permission(ctx, role, mode, perm, can)
 
+
+    async def permission_tutorial(self, ctx):
+
+        embedmsg = embed.createEmbed(title="Configurações de Permissões!", 
+                description= f"Verifique a lista de argumentos e permissões",
+                color=rgb_to_int((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))),
+                fields=[
+                    (f"Argumentos", f"""ctx  -> Discord Context
+                                        role -> CtxRoleConverter
+                                        mode -> channel, category or role
+                                        perm -> permission to change
+                                        bool -> bool""", False),
+                    (f"Permissões", "\n".join([item for item in self.channel_permissions]), False)
+                ],
+                img="https://cdn.discordapp.com/emojis/765969524897218594.png?v=1")
+
+        await ctx.send(embed=embedmsg)
 
 # Setup
 def setup(client):
