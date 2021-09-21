@@ -44,26 +44,41 @@ class GuildManager(commands.Cog):
         self.reaction_db = self.db_client[info['mongo']['database']][info['mongo']['reaction']]
 
 
+    @commands.command(pass_context=True)
+    @has_permissions(administrator = True)
+    async def reset(self, ctx, msg = ""):
+        
+        if type(msg) is not str:
+            msg = msg.content
+        
+        hardreset = "--hard" in msg
+        feedback = "Preferências do bot foram restauradas aos valores padrões!"
+
+        try:
+            self.guild_preferences_db.delete_one({"_id": ctx.guild.id})
+
+            if hardreset:
+                # TODO: Deletar todas as mensagens de reação no --hard
+                self.reaction_db.delete_one({"_id": ctx.guild.id})
+                feedback += " Reações também foram deletadas"
+                
+        except:
+            pass
+        await self.on_guild_join(ctx.guild, hardreset)
+        await ctx.reply(feedback)
+
+
     @commands.Cog.listener()
     async def on_message(self, msg):
         
-        hardreset = "--hard" in msg.content
-
-        feedback = "Preferências do bot foram restauradas aos valores padrões!"
-
         if msg.content.startswith("reset rolemanager"):
-            try:
-                self.guild_preferences_db.delete_one({"_id": msg.guild.id})
+            
+            ctx = await self.client.get_context(msg)
 
-                if hardreset:
-                    # TODO: Deletar todas as mensagens de reação no --hard
-                    self.reaction_db.delete_one({"_id": msg.guild.id})
-                    feedback += " Reações também foram deletadas"
-                
-            except:
-                pass
-            await self.on_guild_join(msg.guild, hardreset)
-            await msg.reply(feedback)
+            if ctx.author.guild_permissions.administrator:
+                await self.reset(ctx, msg)
+            else:
+                await ctx.reply("Você não tem permissão!", delete_after= self.delete_system_message)
 
         elif msg.content.startswith(self.guild_preferences_db.find_one({"_id": msg.guild.id})['prefix']):
             
@@ -166,6 +181,7 @@ class GuildManager(commands.Cog):
 
     @archives.error
     @prefix.error
+    @reset.error
     async def guild_errors(self, ctx, error):
         
         if isinstance(error, CheckFailure):
