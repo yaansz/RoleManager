@@ -25,15 +25,26 @@ If you want to use the bot, just [invite](https://discord.com/oauth2/authorize?c
 
 ### Administrators
 
-- *.create* <**category** | **channel** | **role name**> -> creates a new role based in the current channel or in the specified name
+- *.create* <**none** | **category** | **channel** | **role name**> -> creates a new role based in the current channel or in the specified name
 - *.delete* <**category** | **channel** | **role name**> -> deletes a existent role based in the current channel or in the specified name
 
 ## Others good features
 
+### Archives / Trash
 I implemented a system to have an *archives*, *trash* or something like that, basically, I want to keep a channel but I don't wanna have the role associated, so I just move it to a selected category.
 
 Why it's useful? Situations like when the semester is over and you don't wanna use the chat of 'Data Structures' anymore, but the chat can be useful to other people in the future.
 
+#### Commands
+
+- *.archives* -> Set the archives in the current category
+
+## Reaction Roles
+
+Users can assign and unassign to themselves by reacting to a message with an emoji. The method to create it is very simple
+
 ### Commands
 
-- *.setarchives* -> Set the archives in the current category.
+- *.init emoji-role* -> Starts to listen that message as a reaction emoji message
+- *.addr* <**:emoji:**> <**:role:**> -> Add a reaction/role to the initialized message when replying to it
+- *.remr* <**:emoji:** | **:role:**> -> Remove a reaction/role to the initialized message when replying to it
